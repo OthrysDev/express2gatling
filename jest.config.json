@@ -1,0 +1,19 @@
+{
+    "transform": {
+        "^.+\\.(js)$": "babel-jest",
+        "^.+\\.tsx?$": "ts-jest"
+    },
+    "globals": {
+        "ts-jest": {
+            "tsConfig": "tsconfig.json"
+        }
+    },
+    "moduleNameMapper": {
+        "^src/(.*)$": "<rootDir>/src/$1",
+        "^tests/(.*)$": "<rootDir>/tests/$1",
+        "^index$": "<rootDir>/index",
+        "^package.json$": "<rootDir>/package"
+    },
+    "testEnvironment": "node",
+    "testTimeout": 30000
+}
