@@ -1,6 +1,6 @@
 import express from 'express';
 import Options from '../Options';
-import VarCache from '../cache/VarCache';
+import VarUtil from './VarUtil';
 import GatlingUtil from '../util/GatlingUtil';
 import Util from '../util/Util';
 
@@ -14,10 +14,10 @@ export default class ScriptUtil {
 
         const headers = ScriptUtil.buildHeaders(req, options);
         const body = ScriptUtil.buildBody(req);
-        const varsToSave = VarCache.saveVars(res.getHeaders(), resBody, options);
+        const varsToSave = VarUtil.saveVars(res.getHeaders(), resBody, options);
 
         let request =  `
-        val ${requestName} = 
+    val ${requestName} = 
         exec(
             http("${Util.getMethodDesc(req, options, iterator)}")
             .${req.method.toLowerCase()}("${req.path}")`;
@@ -36,12 +36,12 @@ export default class ScriptUtil {
         // Verbose: print the body
         if(options.verbose){
             request += `
-            .exec(session => {
-                println("${Util.getMethodDesc(req, options, iterator)}")
-                println(session("__BODY__").as[String])
-                session
-            })
-            `;
+        .exec(session => {
+            println("${Util.getMethodDesc(req, options, iterator)}")
+            println(session("__BODY__").as[String])
+            session
+        })
+        `;
         }
 
         return { name: requestName, script: request, pause: ScriptUtil.getPause() };
@@ -75,6 +75,10 @@ export default class ScriptUtil {
                 // Options : includes. Accept only those included
                 if(options.includeHeaders && !options.includeHeaders.map(i => i.toLowerCase()).includes(key.toLowerCase().trim())) continue;
 
+                // Hacky workaround because body-parser seems to care about the case
+                const value = req.headers[key] as string;
+                if(key.toLowerCase() === "content-type") key = "Content-Type";
+
                 // Initialize the headers var 
                 if(!headers) headers = '';
 
@@ -84,22 +88,10 @@ export default class ScriptUtil {
                 if(options.variables.inject.headers && options.variables.inject.headers.length > 0){
                     const varToInject = options.variables.inject.headers.find(h => h.name.toLowerCase() === key.toLowerCase());
 
-                    if(varToInject){
-                        // Variable to inject is a previously saved variable
-                        if(varToInject.value.startsWith("$")) {
-                            if(VarCache.hasVar(varToInject.value.substring(1))) {
-                                h = GatlingUtil.varHeader(key, varToInject.value.substring(1));
-                            } else {
-                                h = GatlingUtil.header(key, req.headers[key] as string);
-                            }
-                        }
-                        // Variable to inject is a harcoded value
-                        else h = GatlingUtil.header(key, varToInject.value);
-                    } else {
-                        h = GatlingUtil.header(key, req.headers[key] as string);
-                    }                  
+                    if(varToInject) h = VarUtil.injectHeaderVar(key, value, varToInject.value);
+                    else h = GatlingUtil.header(key, value);
                 } else {
-                    h = GatlingUtil.header(key, req.headers[key] as string);
+                    h = GatlingUtil.header(key, value);
                 }
 
                 if(headers.length === 0) headers += `${h}`;

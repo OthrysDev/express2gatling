@@ -1,9 +1,8 @@
 import express from 'express';
 import Options, { defaultOptions } from './Options';
 import fs from 'fs';
-import SimulationScriptTemplate from './templates/SimulationScriptTemplate';
-import ScriptsTemplate from './templates/ScriptsTemplate';
-import Util from './util/Util';
+import SimulationTemplate from './templates/SimulationTemplate';
+import RequestsTemplate from './templates/RequestsTemplate';
 import ScriptUtil from './util/ScriptUtil';
 
 
@@ -35,13 +34,13 @@ class Recorder {
         const chunks: Buffer[] = [];
 
         res.write = function (chunk: any): boolean {
-            chunks.push(chunk);
+            chunks.push(Buffer.from(chunk));
 
-            return oldWrite.apply(res);
+            return oldWrite.apply(res, arguments);
         };
 
         res.end = function (chunk?: any, encodingOrCb?: string | Function, cb?: Function): void {
-            if (chunk) chunks.push(chunk);
+            if (chunk) chunks.push(Buffer.from(chunk));
 
             return oldEnd.call(res, chunk, encodingOrCb, cb);
         };
@@ -53,7 +52,8 @@ class Recorder {
                 
                 if(body && body.length > 0) resBody = JSON.parse(body);
             } catch (e) {
-                throw new Error(`Could not parse response body: ${e}`);
+                // Will happen if response is a file, for example
+                return;
             }
 
             // Increase iterator. Will help keep things' names unique
@@ -81,7 +81,7 @@ class Recorder {
 
         // Add main simulation script
         const simulationScriptWS = fs.createWriteStream(simulationFile);
-        simulationScriptWS.write(SimulationScriptTemplate(
+        simulationScriptWS.write(SimulationTemplate(
             this.options,
             this.recording.host, 
             this.recording.requests
@@ -89,7 +89,7 @@ class Recorder {
 
         // Then the scripts file
         const requestsScriptWS = fs.createWriteStream(requestsFile);
-        requestsScriptWS.write(ScriptsTemplate(
+        requestsScriptWS.write(RequestsTemplate(
             this.options,
             this.recording.requests
         ));

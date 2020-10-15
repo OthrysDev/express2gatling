@@ -2,7 +2,7 @@ import express from 'express';
 import ScriptUtil from 'src/util/ScriptUtil';
 import Options, { defaultOptions } from 'src/Options';
 import TestUtil from 'tests/TestUtil';
-import VarCache from 'src/cache/VarCache';
+import VarUtil from 'src/util/VarUtil';
 import { Script } from 'vm';
 
 
@@ -46,7 +46,7 @@ describe('ScriptUtil', () => {
         test('Testing a standard request', () => {
             jest.spyOn(ScriptUtil, 'buildHeaders').mockImplementation(() => '.mockedHeaders')
             jest.spyOn(ScriptUtil, 'buildBody').mockImplementation(() => '.mockedBody');
-            jest.spyOn(VarCache, 'saveVars').mockImplementation(() => '.mockedSaveVars');
+            jest.spyOn(VarUtil, 'saveVars').mockImplementation(() => '.mockedSaveVars');
             jest.spyOn(ScriptUtil, 'getPause').mockImplementation(() => 777);
 
             const result = ScriptUtil.buildRequest(REQ_MOCK, RES_MOCK, {}, defaultOptions, 0);
@@ -59,7 +59,7 @@ describe('ScriptUtil', () => {
         test('Request with no body', () => {
             jest.spyOn(ScriptUtil, 'buildHeaders').mockImplementation(() => '.mockedHeaders')
             jest.spyOn(ScriptUtil, 'buildBody').mockImplementation(() => undefined);
-            jest.spyOn(VarCache, 'saveVars').mockImplementation(() => '.mockedSaveVars');
+            jest.spyOn(VarUtil, 'saveVars').mockImplementation(() => '.mockedSaveVars');
             jest.spyOn(ScriptUtil, 'getPause').mockImplementation(() => 777);
 
             const result = ScriptUtil.buildRequest(REQ_MOCK, RES_MOCK, {}, defaultOptions, 0);
@@ -72,7 +72,7 @@ describe('ScriptUtil', () => {
         test('Request with no headers', () => {
             jest.spyOn(ScriptUtil, 'buildHeaders').mockImplementation(() => undefined)
             jest.spyOn(ScriptUtil, 'buildBody').mockImplementation(() => '.mockedBody');
-            jest.spyOn(VarCache, 'saveVars').mockImplementation(() => '.mockedSaveVars');
+            jest.spyOn(VarUtil, 'saveVars').mockImplementation(() => '.mockedSaveVars');
             jest.spyOn(ScriptUtil, 'getPause').mockImplementation(() => 777);
 
             const result = ScriptUtil.buildRequest(REQ_MOCK, RES_MOCK, {}, defaultOptions, 0);
@@ -85,7 +85,7 @@ describe('ScriptUtil', () => {
         test('Request with no saved vars', () => {
             jest.spyOn(ScriptUtil, 'buildHeaders').mockImplementation(() => '.mockedHeaders')
             jest.spyOn(ScriptUtil, 'buildBody').mockImplementation(() => '.mockedBody');
-            jest.spyOn(VarCache, 'saveVars').mockImplementation(() => undefined)
+            jest.spyOn(VarUtil, 'saveVars').mockImplementation(() => undefined)
             jest.spyOn(ScriptUtil, 'getPause').mockImplementation(() => 777);
 
             const result = ScriptUtil.buildRequest(REQ_MOCK, RES_MOCK, {}, defaultOptions, 0);
@@ -98,7 +98,7 @@ describe('ScriptUtil', () => {
         test('Testing a standard request with verbose mode on', () => {
             jest.spyOn(ScriptUtil, 'buildHeaders').mockImplementation(() => '.mockedHeaders')
             jest.spyOn(ScriptUtil, 'buildBody').mockImplementation(() => '.mockedBody');
-            jest.spyOn(VarCache, 'saveVars').mockImplementation(() => '.mockedSaveVars');
+            jest.spyOn(VarUtil, 'saveVars').mockImplementation(() => '.mockedSaveVars');
             jest.spyOn(ScriptUtil, 'getPause').mockImplementation(() => 777);
 
             const result = ScriptUtil.buildRequest(REQ_MOCK, RES_MOCK, {}, { ...defaultOptions, verbose: true }, 0);
@@ -191,6 +191,13 @@ describe('ScriptUtil', () => {
             TestUtil.expectEqualCleansed(result, `.header("foo", "bar")`);
         });
 
+        // Workaround
+        test('[Workaround] Options specify content-type : make sure it has the right case', () => {
+            const result = ScriptUtil.buildHeaders({ headers: { "content-type": "bar" } } as unknown as express.Request, defaultOptions);
+
+            TestUtil.expectEqualCleansed(result, `.header("Content-Type", "bar")`);
+        });
+
         test('Options specify to include no header at all', () => {
             const options = {
                 includeHeaders: [],
@@ -274,7 +281,7 @@ describe('ScriptUtil', () => {
                 variables: {
                     inject: {
                         headers: [
-                            { name: "foo", value: "$dyn" }
+                            { name: "foo", value: "%dyn%" }
                         ]
                     }
                 }
@@ -286,13 +293,13 @@ describe('ScriptUtil', () => {
         });
 
         test("Options specify to inject one dynamic value and one hardcoded value", () => {
-            VarCache.addVar("dyn");
+            VarUtil.addVar("dyn");
 
             const options = {
                 variables: {
                     inject: {
                         headers: [
-                            { name: "foo", value: "$dyn" }
+                            { name: "foo", value: "%dyn%" }
                         ]
                     }
                 }
@@ -304,15 +311,15 @@ describe('ScriptUtil', () => {
         });
 
         test("Options specify to inject two dynamic values", () => {
-            VarCache.addVar("dyn");
-            VarCache.addVar("nyd");
+            VarUtil.addVar("dyn");
+            VarUtil.addVar("nyd");
 
             const options = {
                 variables: {
                     inject: {
                         headers: [
-                            { name: "foo", value: "$dyn" },
-                            { name: "oof", value: "$nyd" }
+                            { name: "foo", value: "%dyn%" },
+                            { name: "oof", value: "%nyd%" }
                         ]
                     }
                 }

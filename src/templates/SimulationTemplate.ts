@@ -1,6 +1,6 @@
 import Options from '../Options';
 
-const SimulationScriptTemplate = (
+const SimulationTemplate = (
     options: Options, 
     host: string | undefined, 
     requests: { name: string; script: string; pause: number }[]
@@ -52,4 +52,4 @@ class ${options.simulationName} extends Simulation {
 `
 };
 
-export default SimulationScriptTemplate;
+export default SimulationTemplate;

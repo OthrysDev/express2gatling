@@ -32,6 +32,12 @@ describe('GatlingUtil', () => {
             TestUtil.expectEqualCleansed(result, `__FOO__`);
         });
 
+        test('Standard var with %', () => {
+            const result = GatlingUtil.var("%foo%");
+
+            TestUtil.expectEqualCleansed(result, `__FOO__`);
+        });
+
     });
 
     describe('jsonBody()', () => {
@@ -50,6 +56,26 @@ describe('GatlingUtil', () => {
             const result = GatlingUtil.formParam("foo", "bar");
 
             TestUtil.expectEqualCleansed(result, `.formParam("foo", "bar")`);
+        });
+
+    });
+
+    describe('saveHeaderVar()', () => {
+
+        test('Standard form param', () => {
+            const result = GatlingUtil.saveHeaderVar("foo");
+
+            TestUtil.expectEqualCleansed(result, `.check(header("foo").saveAs("__FOO__"))`);
+        });
+
+    });
+
+    describe('saveBodyVar()', () => {
+
+        test('Standard form param', () => {
+            const result = GatlingUtil.saveBodyVar("foo");
+
+            TestUtil.expectEqualCleansed(result, `.check(jsonPath("$.foo").saveAs("__FOO__"))`);
         });
 
     });

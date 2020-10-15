@@ -1,4 +1,4 @@
-import VarCache from 'src/cache/VarCache';
+import VarUtil from 'src/util/VarUtil';
 import Options from 'src/Options';
 import TestUtil from 'tests/TestUtil';
 
@@ -13,9 +13,9 @@ const OBJ2 = {
     "zab": "mab",
 };
 
-describe('VarCache', () => {
+describe('VarUtil', () => {
 
-    beforeEach(() => VarCache.reset());
+    beforeEach(() => VarUtil.reset());
 
     // ================================================================================================
     // ================================================================================================
@@ -30,10 +30,10 @@ describe('VarCache', () => {
                 }
             } as unknown as Options;
 
-            const result = VarCache.saveHeadersVars(OBJ1, options);
+            const result = VarUtil.saveHeadersVars(OBJ1, options);
 
             expect(result).toEqual(undefined);
-            expect(VarCache.hasVar("foo")).toEqual(false);
+            expect(VarUtil.hasVar("foo")).toEqual(false);
         });
 
         test('Options specify to save one var', () => {
@@ -43,10 +43,10 @@ describe('VarCache', () => {
                 }
             } as unknown as Options;
 
-            const result = VarCache.saveHeadersVars(OBJ1, options);
+            const result = VarUtil.saveHeadersVars(OBJ1, options);
 
             TestUtil.expectEqualCleansed(result, `.check(header("foo").saveAs("__FOO__"))`);
-            expect(VarCache.hasVar("foo")).toEqual(true);
+            expect(VarUtil.hasVar("foo")).toEqual(true);
         });
 
         test('Options specify to save a var that is not in headers', () => {
@@ -56,10 +56,10 @@ describe('VarCache', () => {
                 }
             } as unknown as Options;
 
-            const result = VarCache.saveHeadersVars(OBJ1, options);
+            const result = VarUtil.saveHeadersVars(OBJ1, options);
 
             expect(result).toEqual(undefined);
-            expect(VarCache.hasVar("not")).toEqual(false);
+            expect(VarUtil.hasVar("not")).toEqual(false);
         });
 
         test('Options specify to save two vars', () => {
@@ -69,11 +69,11 @@ describe('VarCache', () => {
                 }
             } as unknown as Options;
 
-            const result = VarCache.saveHeadersVars(OBJ1, options);
+            const result = VarUtil.saveHeadersVars(OBJ1, options);
 
             TestUtil.expectEqualCleansed(result, `.check(header("foo").saveAs("__FOO__")).check(header("baz").saveAs("__BAZ__"))`);
-            expect(VarCache.hasVar("foo")).toEqual(true);
-            expect(VarCache.hasVar("baz")).toEqual(true);
+            expect(VarUtil.hasVar("foo")).toEqual(true);
+            expect(VarUtil.hasVar("baz")).toEqual(true);
         });
 
     });
@@ -87,10 +87,10 @@ describe('VarCache', () => {
                 }
             } as unknown as Options;
 
-            const result = VarCache.saveBodyVars(OBJ1, options);
+            const result = VarUtil.saveBodyVars(OBJ1, options);
 
             expect(result).toEqual(undefined);
-            expect(VarCache.hasVar("foo")).toEqual(false);
+            expect(VarUtil.hasVar("foo")).toEqual(false);
         });
 
         test('Options specify to save one var', () => {
@@ -100,10 +100,10 @@ describe('VarCache', () => {
                 }
             } as unknown as Options;
 
-            const result = VarCache.saveBodyVars(OBJ1, options);
+            const result = VarUtil.saveBodyVars(OBJ1, options);
 
             TestUtil.expectEqualCleansed(result, `.check(jsonPath("$.foo").saveAs("__FOO__"))`);
-            expect(VarCache.hasVar("foo")).toEqual(true);
+            expect(VarUtil.hasVar("foo")).toEqual(true);
         });
 
         test('Options specify to save a var that is not in body', () => {
@@ -113,10 +113,10 @@ describe('VarCache', () => {
                 }
             } as unknown as Options;
 
-            const result = VarCache.saveBodyVars(OBJ1, options);
+            const result = VarUtil.saveBodyVars(OBJ1, options);
 
             expect(result).toEqual(undefined);
-            expect(VarCache.hasVar("not")).toEqual(false);
+            expect(VarUtil.hasVar("not")).toEqual(false);
         });
 
         test('Options specify to save two vars', () => {
@@ -126,11 +126,11 @@ describe('VarCache', () => {
                 }
             } as unknown as Options;
 
-            const result = VarCache.saveBodyVars(OBJ1, options);
+            const result = VarUtil.saveBodyVars(OBJ1, options);
 
             TestUtil.expectEqualCleansed(result, `.check(jsonPath("$.foo").saveAs("__FOO__")).check(jsonPath("$.baz").saveAs("__BAZ__"))`);
-            expect(VarCache.hasVar("foo")).toEqual(true);
-            expect(VarCache.hasVar("baz")).toEqual(true);
+            expect(VarUtil.hasVar("foo")).toEqual(true);
+            expect(VarUtil.hasVar("baz")).toEqual(true);
         });
 
     });
@@ -144,7 +144,7 @@ describe('VarCache', () => {
                 }
             } as unknown as Options;
 
-            const result = VarCache.saveVars(OBJ1, OBJ2, options);
+            const result = VarUtil.saveVars(OBJ1, OBJ2, options);
 
             expect(result).toEqual(undefined);
         });
@@ -156,11 +156,11 @@ describe('VarCache', () => {
                 }
             } as unknown as Options;
 
-            const result = VarCache.saveVars(OBJ1, OBJ2, options);
+            const result = VarUtil.saveVars(OBJ1, OBJ2, options);
 
             TestUtil.expectEqualCleansed(result, `.check(header("foo").saveAs("__FOO__")).check(header("baz").saveAs("__BAZ__"))`);
-            expect(VarCache.hasVar("foo")).toEqual(true);
-            expect(VarCache.hasVar("baz")).toEqual(true);
+            expect(VarUtil.hasVar("foo")).toEqual(true);
+            expect(VarUtil.hasVar("baz")).toEqual(true);
         });
 
         test('Options specify to save only body vars', () => {
@@ -170,11 +170,11 @@ describe('VarCache', () => {
                 }
             } as unknown as Options;
 
-            const result = VarCache.saveVars(OBJ1, OBJ2, options);
+            const result = VarUtil.saveVars(OBJ1, OBJ2, options);
 
             TestUtil.expectEqualCleansed(result, `.check(jsonPath("$.oof").saveAs("__OOF__")).check(jsonPath("$.zab").saveAs("__ZAB__"))`);
-            expect(VarCache.hasVar("oof")).toEqual(true);
-            expect(VarCache.hasVar("zab")).toEqual(true);
+            expect(VarUtil.hasVar("oof")).toEqual(true);
+            expect(VarUtil.hasVar("zab")).toEqual(true);
         });
 
         test('Options specify to save headers & body vars', () => {
@@ -184,15 +184,67 @@ describe('VarCache', () => {
                 }
             } as unknown as Options;
 
-            const result = VarCache.saveVars(OBJ1, OBJ2, options);
+            const result = VarUtil.saveVars(OBJ1, OBJ2, options);
 
             TestUtil.expectEqualCleansed(result, `.check(header("foo").saveAs("__FOO__")).check(header("baz").saveAs("__BAZ__")).check(jsonPath("$.oof").saveAs("__OOF__")).check(jsonPath("$.zab").saveAs("__ZAB__"))`);
-            expect(VarCache.hasVar("foo")).toEqual(true);
-            expect(VarCache.hasVar("baz")).toEqual(true);
-            expect(VarCache.hasVar("oof")).toEqual(true);
-            expect(VarCache.hasVar("zab")).toEqual(true);
+            expect(VarUtil.hasVar("foo")).toEqual(true);
+            expect(VarUtil.hasVar("baz")).toEqual(true);
+            expect(VarUtil.hasVar("oof")).toEqual(true);
+            expect(VarUtil.hasVar("zab")).toEqual(true);
         });
 
     });
+
+    describe('injectHeaderVar()', () => {
+
+        test('Inject hardcoded value', () => {
+            const result = VarUtil.injectHeaderVar("foo", "bar", "baz");
+
+            TestUtil.expectEqualCleansed(result, `.header("foo", "baz")`);
+        });
+
+        test('Inject dynamic value not available in cache', () => {
+            const result = VarUtil.injectHeaderVar("foo", "bar", "%baz%");
+
+            TestUtil.expectEqualCleansed(result, `.header("foo", "bar")`);
+        });
+
+        test('Inject dynamic value available in cache', () => {
+            VarUtil.addVar("baz");
+
+            const result = VarUtil.injectHeaderVar("foo", "bar", "%baz%");
+
+            TestUtil.expectEqualCleansed(result, `.header("foo", "\${__BAZ__}")`);
+        });
+
+        test('Inject a mix of hardcoded values and dynamic values', () => {
+            VarUtil.addVar("baz");
+
+            const result = VarUtil.injectHeaderVar("foo", "bar", "hard %baz%");
+
+            TestUtil.expectEqualCleansed(result, `.header("foo", "hard \${__BAZ__}")`);
+        });
+
+        test('Inject a big combination of hardcoded values and dynamic values', () => {
+            VarUtil.addVar("baz");
+            VarUtil.addVar("oof");
+            VarUtil.addVar("zab");
+
+            const result = VarUtil.injectHeaderVar("foo", "bar", "hard %baz%_%oof%_%baz%-drah-%zab% hard0");
+
+            TestUtil.expectEqualCleansed(result, `.header("foo", "hard \${__BAZ__}_\${__OOF__}_\${__BAZ__}-drah-\${__ZAB__} hard0")`);
+        });
+
+        test('Inject a big combination of hardcoded values and dynamic values but one dynamic var is missing - fallback to original value', () => {
+            VarUtil.addVar("baz");
+            VarUtil.addVar("oof");
+
+            const result = VarUtil.injectHeaderVar("foo", "bar", "hard %baz%_%oof%_%baz%-drah-%zab% hard0");
+
+            TestUtil.expectEqualCleansed(result, `.header("foo", "bar")`);
+        });
+
+    });
+
 
 });

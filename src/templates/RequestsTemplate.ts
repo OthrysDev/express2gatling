@@ -1,6 +1,6 @@
 import Options from '../Options';
 
-const ScriptsTemplate = (
+const RequestsTemplate = (
     options: Options, 
     requests: { name: string; script: string; pause: number }[]
 ): String => `package ${options.packageName}
@@ -12,8 +12,8 @@ import scala.util.Random
 
 
 object ${options.requestsFile.split(".")[0]} {
-${requests.map(r => r.script).join("\n")}
+${requests.map(r => r.script).join("")}
 }
 `
 
-export default ScriptsTemplate;
+export default RequestsTemplate;

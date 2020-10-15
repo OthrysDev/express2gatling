@@ -73,15 +73,14 @@ describe('Recorder', () => {
             expect(recorder.recording.requests).toContain(scriptedReq);
         });
 
-        test('Request with malformed body - should throw', () => {
-            const recorder = new Recorder();
+        test('Request with malformed body - should return', () => {
+            const buildRequestMock = jest.fn((req: express.Request, res: express.Response, resBody: any, options: Options, iterator: number) => ({ name: "0", script: "0", pause: 0 }));
+            jest.spyOn(ScriptUtil, 'buildRequest').mockImplementation(buildRequestMock);
 
-            try{
-                recorder.rec(REQ_MOCK, { ...RES_MOCK_WITH_BODY, _body: `{"foo":` } as unknown as express.Response, NEXT_MOCK);
-                fail();
-            } catch(e) {
-                //
-            }
+            const recorder = new Recorder();
+            recorder.rec(REQ_MOCK, { ...RES_MOCK_WITH_BODY, _body: `{"foo":` } as unknown as express.Response, NEXT_MOCK);
+
+            expect(buildRequestMock).toBeCalledTimes(0);
         });
 
         test('Options specify to exclude request with method GET', () => {
