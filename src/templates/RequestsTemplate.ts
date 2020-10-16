@@ -11,7 +11,7 @@ import scala.concurrent.duration._
 import scala.util.Random
 
 
-object ${options.requestsFile.split(".")[0]} {
+object ${options.requestsFile} {
 ${requests.map(r => r.script).join("")}
 }
 `

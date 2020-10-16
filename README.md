@@ -2,7 +2,7 @@
 
 **express2gatling** is a library written in Typescript that records incoming HTTP calls within Express and exports them into Gatling scripts.
 
-Gatling is a major stress-testing tool written in Scala that can ramp up millions of users and generate high-resolution metrics.
+Gatling is a major stress-testing tool written in scala that can ramp up millions of users and generate high-resolution metrics.
 
 Gatling's website : https://gatling.io
 
@@ -80,4 +80,43 @@ For more info about Gatling please refer to their website.
 
 ## Documentation
 
-TODO
+You can can modify the recorder's behaviour by using the options param : 
+
+```javascript
+const options = { /** put your options here */ };
+const recorder = new Recorder(options);
+```
+
+Here's the full list of options available : 
+
+| Name | Type | Default value | Description |
+| ---- | ---- | ------------- | ----------- |
+| verbose | boolean | false | Wether or not to create verbose Gatling scripts, that will output requests bodies etc. |
+| rootFolder | string | "./gatling/simulations" | The folder in which the scripts will be outputted to |
+| simulationFolder | string | "simulation1" | The folder within the rootFolder in which your simulation which be outputted to |
+| simulationName | string | "Simulation1" | The name of your simulation (will be the name of the main scala file) |
+| scenarioName | string | "Scenario1" | The name of your scenario. Please follow scala conventions for classes naming |
+| packageName | string | "scenario1" | The name of your package. Please follow scala conventions for package naming conventions |
+| requestsFile | string | "Requests" | The name of the scala file containing all the requests. Please follow scala conventions for package naming conventions |
+| methodsNamePattern | string | "%method%_%pathStart%_%iterator%" | The name of the scripts methods. You can use any combination of hardcoded values and the following dynamic values : %method% (ex: "get"), %METHOD% (ex: "GET"), %pathStart% (ex: "foo"), %PATHSTART% (ex: "FOO"), %iterator% (ex: 0) |
+| methodsDescPattern | string | "%METHOD% %pathStart%" | The description of the scripts methods. You can use any combination of hardcoded values and the following dynamic values : %method% (ex: "get"), %METHOD% (ex: "GET"), %pathStart% (ex: "foo"), %PATHSTART% (ex: "FOO"), %iterator% (ex: 0) |
+| excludeRequests.methods | string[] | [ "OPTIONS" ] | HTTP requests you want to exclude by method. Methods should be one or many of the following : "POST", "GET", "PUT", "DELETE", "OPTIONS", "HEAD", "TRACE", "CONNECT", "PATCH" |
+| includeHeaders | string[] \| undefined | undefined | Headers that shall be keps in the scripted HTTP requests. If you specify one or more headers, only those will be kept and the others will be discarded in the final script |
+| variables.save.headers | string[] | [] | Values sent back by the server in the headers that you might want to catch & save for later. Simply specify the header's name |
+| variables.save.body | string[] | [] | Values sent back by the server in the body that you might want to catch & save for later. Simply specify the variable's name |
+| variables.inject.headers | { name: string, value: string }[] | [] | Values you want to inject in the headers. Can be a combination of hardcoded values and stored variables, for instance : { name: "foo", value: "foo %bar%" } (given that %bar% is a variable you have previously saved via variables.save. If %bar% has not be captured yet the injection won't work and default to the initial value) |
+| variables.inject.body | { name: string, value: string }[] | [] | Values you want to inject in the body. Can be a combination of hardcoded values and stored variables, for instance : { name: "foo", value: "foo %bar%" } (given that %bar% is a variable you have previously saved via variables.save. If %bar% has not be captured yet the injection won't work and default to the initial value) |
+
+## People
+
+This library has been created by and is maintained by [Othrys](https://othrys.dev).
+
+[List of all contributors](https://github.com/OthrysDev/express2gatling/graphs/contributors)
+
+## License
+
+[MIT](LICENSE)
+
+
+
+

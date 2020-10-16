@@ -75,7 +75,7 @@ class Recorder {
         
         const folder = `${this.options.rootFolder}/${this.options.simulationFolder}`;
         const simulationFile = `${folder}/${this.options.simulationName}.scala`;
-        const requestsFile = `${folder}/${this.options.requestsFile}`;
+        const requestsFile = `${folder}/${this.options.requestsFile}.scala`;
 
         // Create output directory & file
         fs.mkdirSync(folder, { recursive: true });

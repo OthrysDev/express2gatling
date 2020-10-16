@@ -47,7 +47,7 @@ export const defaultOptions: Options = {
     simulationName: "Simulation1",
     scenarioName: "Scenario1",
     packageName: "scenario1",
-    requestsFile: "Requests.scala",
+    requestsFile: "Requests",
 
     // Dynamic namings
     methodsNamePattern: "%method%_%pathStart%_%iterator%",
