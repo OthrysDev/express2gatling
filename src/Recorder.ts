@@ -33,10 +33,11 @@ class Recorder {
         const oldEnd: Function = res.end;
         const chunks: Buffer[] = [];
 
-        res.write = function (chunk: any, ...args: any[]): boolean {
+        res.write = function (chunk: any): boolean {
             chunks.push(Buffer.from(chunk));
 
-            return oldWrite.apply(res, args);
+            // eslint-disable-next-line prefer-rest-params
+            return oldWrite.apply(res, arguments);
         };
 
         res.end = function (chunk?: any, encodingOrCb?: string | Function, cb?: Function): void {
