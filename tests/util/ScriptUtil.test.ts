@@ -3,7 +3,6 @@ import ScriptUtil from 'src/util/ScriptUtil';
 import Options, { defaultOptions } from 'src/Options';
 import TestUtil from 'tests/TestUtil';
 import VarUtil from 'src/util/VarUtil';
-import { Script } from 'vm';
 
 
 const REQ_MOCK = {

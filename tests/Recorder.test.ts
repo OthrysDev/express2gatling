@@ -1,6 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import express from 'express';
 import Recorder from 'src/Recorder';
-import TestUtil from 'tests/TestUtil';
 import Options from 'src/Options';
 import ScriptUtil from 'src/util/ScriptUtil';
 import fs from 'fs';

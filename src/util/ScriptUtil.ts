@@ -56,11 +56,11 @@ export default class ScriptUtil {
 
             // URL encoded
             if(req.headers["content-type"] && req.headers["content-type"] === "application/x-www-form-urlencoded"){
-                for(let k of Object.keys(req.body)) body += GatlingUtil.formParam(k, req.body[k]);
+                for(const k of Object.keys(req.body)) body += GatlingUtil.formParam(k, req.body[k]);
             } 
             // Default (JSON)
             else {
-                body = GatlingUtil.jsonBody(req.body);;
+                body = GatlingUtil.jsonBody(req.body);
             }
         }
         
@@ -83,7 +83,7 @@ export default class ScriptUtil {
                 if(!headers) headers = '';
 
                 // If the variable has been saved by a previous request, use saved value
-                let h:string = '';
+                let h = '';
                 // Shall we inject a value for this particular header?
                 if(options.variables.inject.headers && options.variables.inject.headers.length > 0){
                     const varToInject = options.variables.inject.headers.find(h => h.name.toLowerCase() === key.toLowerCase());

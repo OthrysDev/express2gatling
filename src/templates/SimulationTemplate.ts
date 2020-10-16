@@ -4,7 +4,7 @@ const SimulationTemplate = (
     options: Options, 
     host: string | undefined, 
     requests: { name: string; script: string; pause: number }[]
-): String => {
+): string => {
     
     const requestsFileNameNoExtension = options.requestsFile.split(".")[0];
     

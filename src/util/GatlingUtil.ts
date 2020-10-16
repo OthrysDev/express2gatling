@@ -7,7 +7,7 @@ export default class GatlingUtil {
     }
 
     public static varHeader(key: string, value: string): string {
-        return `.header("${key}", "\$\{${GatlingUtil.var(value)}\}")`;
+        return `.header("${key}", "\${${GatlingUtil.var(value)}}")`;
     }
 
     public static jsonBody(body: any): string {

@@ -25,7 +25,7 @@ class Recorder {
         this.options = Object.assign(defaultOptions, options);
     }
 
-    rec(req: express.Request, res: express.Response, next: express.NextFunction) {
+    rec(req: express.Request, res: express.Response, next: express.NextFunction): void {
         // This call has been filtered out by method
         if(this.options.excludeRequests.methods.includes(req.method)) return next();
 
@@ -33,10 +33,10 @@ class Recorder {
         const oldEnd: Function = res.end;
         const chunks: Buffer[] = [];
 
-        res.write = function (chunk: any): boolean {
+        res.write = function (chunk: any, ...args: any[]): boolean {
             chunks.push(Buffer.from(chunk));
 
-            return oldWrite.apply(res, arguments);
+            return oldWrite.apply(res, args);
         };
 
         res.end = function (chunk?: any, encodingOrCb?: string | Function, cb?: Function): void {
@@ -66,10 +66,10 @@ class Recorder {
             this.recording.requests.push(ScriptUtil.buildRequest(req, res, resBody, this.options, this.iterator));
         });
 
-        next();
+        return next();
     }
 
-    write() {      
+    write(): void {      
         console.log("Exporting recorded request to Gatling scala files...");
         
         const folder = `${this.options.rootFolder}/${this.options.simulationFolder}`;

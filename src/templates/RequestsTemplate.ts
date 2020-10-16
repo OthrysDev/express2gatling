@@ -3,7 +3,7 @@ import Options from '../Options';
 const RequestsTemplate = (
     options: Options, 
     requests: { name: string; script: string; pause: number }[]
-): String => `package ${options.packageName}
+): string => `package ${options.packageName}
 
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
