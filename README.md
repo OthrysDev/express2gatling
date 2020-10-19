@@ -54,8 +54,8 @@ process.on('SIGINT', () => recorder.write());
 ### Output
 
 Once you call `recorder.write()`, the library will generate a folder (defaults to `/gatling`) containing two files : 
-- **Requests.scala** : contains all the HTTP requests, scripted in the scala / Gatling fashion
-- **Simulation1.scala** : contains the main entry point for Gatling, with scenario definitions
+- **Requests.scala** : contains all the HTTP requests, scripted in a scala / Gatling fashion
+- **Simulation1.scala** : contains the main entry point for Gatling, with scenarios definitions
 
 Whatever the features and limitations of the library, feel free to modify those scripts manually.
 
@@ -65,7 +65,7 @@ For the scripts to be run you shall install Gatling : https://gatling.io/open-so
 
 Follow the procedures & documentation provided on Gatling's website. Normally you should download a zip file containing the sources to run Gatling in standalone mode. You might have to install a JDK to have it run.
 
-Once Gatling is operationnl, point it to your scripts by modifying the `galting.conf` file : 
+Once Gatling is operationnal, point it to your scripts by modifying the `gatling.conf` file : 
 ```yaml
 [...]
 directory {
@@ -74,13 +74,13 @@ directory {
 [...]
 ```
 
-Follow the instructions prompted in the console that shall eventually lead the stress test being ran and HTML reports being generated.
+Follow the instructions prompted in the console that shall eventually lead to the stress test being ran and HTML reports being generated.
 
 For more info about Gatling please refer to their website.
 
 ## Documentation
 
-You can can modify the recorder's behaviour by using the options param : 
+You can can modify the recorder's behaviour by using the **options** param : 
 
 ```javascript
 const options = { /** put your options here */ };
@@ -91,7 +91,7 @@ Here's the full list of options available :
 
 | Name | Type | Default value | Description |
 | ---- | ---- | ------------- | ----------- |
-| verbose | boolean | false | Wether or not to create verbose Gatling scripts, that will output requests bodies etc. |
+| verbose | boolean | false | Wether or not to create verbose Gatling scripts, that will output reponse bodies etc. |
 | rootFolder | string | "./gatling/simulations" | The folder in which the scripts will be outputted to |
 | simulationFolder | string | "simulation1" | The folder within the rootFolder in which your simulation which be outputted to |
 | simulationName | string | "Simulation1" | The name of your simulation (will be the name of the main scala file) |
@@ -101,11 +101,11 @@ Here's the full list of options available :
 | methodsNamePattern | string | "%method%_%pathStart%_%iterator%" | The name of the scripts methods. You can use any combination of hardcoded values and the following dynamic values : %method% (ex: "get"), %METHOD% (ex: "GET"), %pathStart% (ex: "foo"), %PATHSTART% (ex: "FOO"), %iterator% (ex: 0) |
 | methodsDescPattern | string | "%METHOD% %pathStart%" | The description of the scripts methods. You can use any combination of hardcoded values and the following dynamic values : %method% (ex: "get"), %METHOD% (ex: "GET"), %pathStart% (ex: "foo"), %PATHSTART% (ex: "FOO"), %iterator% (ex: 0) |
 | excludeRequests.methods | string[] | [ "OPTIONS" ] | HTTP requests you want to exclude by method. Methods should be one or many of the following : "POST", "GET", "PUT", "DELETE", "OPTIONS", "HEAD", "TRACE", "CONNECT", "PATCH" |
-| includeHeaders | string[] \| undefined | undefined | Headers that shall be keps in the scripted HTTP requests. If you specify one or more headers, only those will be kept and the others will be discarded in the final script |
+| includeHeaders | string[] \| undefined | undefined | Headers that shall be kept in the scripted HTTP requests. If you specify one or more headers, only those will be kept and the others will be discarded in the final script |
 | variables.save.headers | string[] | [] | Values sent back by the server in the headers that you might want to catch & save for later. Simply specify the header's name |
 | variables.save.body | string[] | [] | Values sent back by the server in the body that you might want to catch & save for later. Simply specify the variable's name |
-| variables.inject.headers | { name: string, value: string }[] | [] | Values you want to inject in the headers. Can be a combination of hardcoded values and stored variables, for instance : { name: "foo", value: "foo %bar%" } (given that %bar% is a variable you have previously saved via variables.save. If %bar% has not be captured yet the injection won't work and default to the initial value) |
-| variables.inject.body | { name: string, value: string }[] | [] | Values you want to inject in the body. Can be a combination of hardcoded values and stored variables, for instance : { name: "foo", value: "foo %bar%" } (given that %bar% is a variable you have previously saved via variables.save. If %bar% has not be captured yet the injection won't work and default to the initial value) |
+| variables.inject.headers | { name: string, value: string }[] | [] | Values you want to inject in the headers. Can be a combination of hardcoded values and stored variables, for instance : { name: "foo", value: "foo %bar%" } (given that %bar% is a variable you have previously saved via variables.save. If %bar% has not be captured yet the injection won't work and will default to the initial value) |
+| variables.inject.body | { name: string, value: string }[] | [] | Values you want to inject in the body. Can be a combination of hardcoded values and stored variables, for instance : { name: "foo", value: "foo %bar%" } (given that %bar% is a variable you have previously saved via variables.save. If %bar% has not be captured yet the injection won't work and will default to the initial value) |
 
 ## People
 
