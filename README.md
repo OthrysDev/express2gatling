@@ -16,7 +16,7 @@ While Gatling is one of the best tools there is to perform stress-tests on a ser
 - The recorder analyses every incoming HTTP request
 - When the end user is done, the recorder generates scala files that that are directly compatible with Gatling.
 
-###Limitations
+### Limitations
 
 This library only works with Node / Express, and for the time being it is most suited to the JSON format regarding the request / responses bodies.
 
