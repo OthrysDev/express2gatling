@@ -1,3 +1,4 @@
+import Options, { defaultOptions } from 'src/Options';
 import GatlingUtil from 'src/util/GatlingUtil';
 import TestUtil from 'tests/TestUtil';
 
@@ -55,7 +56,7 @@ describe('GatlingUtil', () => {
         test('Standard form param', () => {
             const result = GatlingUtil.formParam("foo", "bar");
 
-            TestUtil.expectEqualCleansed(result, `.formParam("foo", "bar")`);
+            TestUtil.expectEqualCleansed(result, `.formParam("foo", StringBody("""bar"""))`);
         });
 
     });
@@ -76,6 +77,28 @@ describe('GatlingUtil', () => {
             const result = GatlingUtil.saveBodyVar("foo");
 
             TestUtil.expectEqualCleansed(result, `.check(jsonPath("$.foo").saveAs("__FOO__"))`);
+        });
+
+    });
+
+    describe('formUpload()', () => {
+
+        test('No files specified in options', () => {
+            const result = GatlingUtil.formUpload("foo", "picture.png", defaultOptions);
+
+            TestUtil.expectEqualCleansed(result, `.formUpload("foo", StringBody("""picture.png"""))`);
+        });
+
+        test('Options specify matching files', () => {
+            const result = GatlingUtil.formUpload("foo", "picture.png", { ...defaultOptions, files: [ "optionsFile.png" ] });
+
+            TestUtil.expectEqualCleansed(result, `.formUpload("foo", StringBody("""optionsFile.png"""))`);
+        });
+
+        test('Options specify files but with different extensions', () => {
+            const result = GatlingUtil.formUpload("foo", "picture.png", { ...defaultOptions, files: [ "optionsFile.jpg" ] });
+
+            TestUtil.expectEqualCleansed(result, `.formUpload("foo", StringBody("""picture.png"""))`);
         });
 
     });

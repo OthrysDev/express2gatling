@@ -4,6 +4,7 @@ import VarUtil from './VarUtil';
 import GatlingUtil from '../util/GatlingUtil';
 import Util from '../util/Util';
 import flat from 'flat';
+import fileUpload from 'express-fileupload';
 
 
 export default class ScriptUtil {
@@ -56,28 +57,39 @@ export default class ScriptUtil {
             body = '';
 
             // URL encoded
-            if(req.headers["content-type"] && req.headers["content-type"] === "application/x-www-form-urlencoded"){
+            if(req.headers["content-type"] && (req.headers["content-type"] === "application/x-www-form-urlencoded" || req.headers["content-type"].includes("multipart/form-data"))){
                 for(const k of Object.keys(req.body)){
-                    const hasFeeder = options.feeders.find(feeder => feeder.name === k);
+                    const hasFeeder = options.feeders?.find(feeder => feeder.name === k);
+                    
+                    if(hasFeeder) {
+                        body += GatlingUtil.formParam(k, `\${${k}}`);
+                    }
+                    else {
+                        if(Util.isJson(req.body[k])){
+                            const injectedVal = ScriptUtil.injectFeedersIntoJson(req.body[k], options.feeders);
 
-                    if(hasFeeder) body += GatlingUtil.formParam(k, `\${${k}}`);
-                    else body += GatlingUtil.formParam(k, req.body[k]);
+                            body += GatlingUtil.formParam(k, JSON.stringify(injectedVal));
+                        } else if(Util.stringIsJson(req.body[k])) {
+                            const injectedVal = ScriptUtil.injectFeedersIntoJson(JSON.parse(req.body[k]), options.feeders);
+
+                            body += GatlingUtil.formParam(k, JSON.stringify(injectedVal));
+                        } else {
+                            body += GatlingUtil.formParam(k, req.body[k]);
+                        }
+                    } 
                 }
-            } 
+
+                // Request contains files
+                if(req.files){
+                    for(const key of Object.keys(req.files)){
+                        const file = req.files[key] as fileUpload.UploadedFile;
+                        body += `\n\t\t\t${GatlingUtil.formUpload(key, file.name, options)}`;
+                    }
+                }
+            }
             // Default (JSON)
             else {
-                const reqBody = { ...req.body };
-
-                const flattenedKeys = flat(reqBody);
-                for(const key of Object.keys(flattenedKeys as object)){
-                    const splittedKey = key.split(".");
-                    const lastKey = splittedKey[splittedKey.length - 1];
-                    const hasFeeder = options.feeders.find(feeder => feeder.name === lastKey);
-
-                    if(hasFeeder) reqBody[key] = `\${${lastKey}}`;
-                }
-
-                body = GatlingUtil.jsonBody(reqBody);
+                body = GatlingUtil.jsonBody(ScriptUtil.injectFeedersIntoJson(req.body, options.feeders));
             }
         }
         
@@ -102,13 +114,24 @@ export default class ScriptUtil {
                 // If the variable has been saved by a previous request, use saved value
                 let h = '';
                 // Shall we inject a value for this particular header?
-                if(options.variables.inject.headers && options.variables.inject.headers.length > 0){
+                if(options.variables?.inject?.headers && options.variables.inject.headers.length > 0){
                     const varToInject = options.variables.inject.headers.find(h => h.name.toLowerCase() === key.toLowerCase());
 
-                    if(varToInject) h = VarUtil.injectHeaderVar(key, value, varToInject.value);
-                    else h = GatlingUtil.header(key, value);
+                    if(varToInject){ 
+                        h = VarUtil.injectHeaderVar(key, value, varToInject.value);
+                    } else {
+                        h = GatlingUtil.header(key, value);
+
+                        const hasFeeder = options.feeders?.find(feeder => feeder.name.toLowerCase() === key.toLowerCase());
+
+                        if(hasFeeder) h = GatlingUtil.header(key, `\${${key}}`);
+                        else h = GatlingUtil.header(key, value);
+                    } 
                 } else {
-                    h = GatlingUtil.header(key, value);
+                    const hasFeeder = options.feeders?.find(feeder => feeder.name.toLowerCase() === key.toLowerCase());
+
+                    if(hasFeeder) h = GatlingUtil.header(key, `\${${key}}`);
+                    else h = GatlingUtil.header(key, value);
                 }
 
                 if(headers.length === 0) headers += `${h}`;
@@ -126,6 +149,21 @@ export default class ScriptUtil {
         ScriptUtil.dateMarker = new Date();
 
         return pause;
+    }
+
+    public static injectFeedersIntoJson(json: any, feeders: { name: string, value: string }[]): string{
+        const clonedJson = { ...json };
+
+        const flattenedKeys = flat(clonedJson);
+        for(const key of Object.keys(flattenedKeys as object)){
+            const splittedKey = key.split(".");
+            const lastKey = splittedKey[splittedKey.length - 1];
+            const hasFeeder = feeders.find(feeder => feeder.name === lastKey);
+
+            if(hasFeeder) clonedJson[key] = `\${${lastKey}}`;
+        }
+
+        return clonedJson;
     }
 
 }

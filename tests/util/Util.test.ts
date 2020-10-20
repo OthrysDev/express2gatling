@@ -72,4 +72,105 @@ describe('Util', () => {
 
     });
 
+    describe('extension()', () => {
+
+        test('Testing file with no extension', () => {
+            const result = Util.extension("README");
+
+            expect(result).toEqual("");
+        });
+
+        test('Testing standard file', () => {
+            const result = Util.extension("test.png");
+
+            expect(result).toEqual("PNG");
+        });
+
+        test('Testing file with dots in its name', () => {
+            const result = Util.extension("test.picture.png");
+
+            expect(result).toEqual("PNG");
+        });
+
+    });
+
+    describe('isJson()', () => {
+
+        test('Testing JSON', () => {
+            const result = Util.isJson({ "foo": "bar" });
+
+            expect(result).toEqual(true);
+        });
+
+        test('Testing array', () => {
+            const result = Util.isJson([ "one", "two"]);
+
+            expect(result).toEqual(false);
+        });
+
+        test('Testing boolean', () => {
+            const result = Util.isJson(true);
+
+            expect(result).toEqual(false);
+        });
+
+        test('Testing string', () => {
+            const result = Util.isJson("foo");
+
+            expect(result).toEqual(false);
+        });
+
+    });
+
+    describe('stringIsJson()', () => {
+
+        test('Testing JSON', () => {
+            const result = Util.stringIsJson(`{ "foo": "bar" }`);
+
+            expect(result).toEqual(true);
+        });
+
+        test('Testing non-JSON', () => {
+            const result = Util.stringIsJson("test.png");
+
+            expect(result).toEqual(false);
+        });
+
+    });
+
+    describe('shuffle()', () => {
+
+        test('Testing empty array', () => {
+            const result = Util.shuffle([]);
+
+            expect(result).toEqual([]);
+        });
+
+        test('Testing standard array', () => {
+            const result = Util.shuffle([ "one", "two", "three" ]);
+
+            expect(result.length).toEqual(3);
+            expect(result).toContain("one");
+            expect(result).toContain("two");
+            expect(result).toContain("three");
+        });
+
+    });
+
+    describe('removeNonAlphaNumChars()', () => {
+
+        test('Testing multiple words', () => {
+            const result = Util.removeNonAlphaNumChars("test multiple words");
+
+            expect(result).toEqual("testmultiplewords");
+        });
+
+        test('Testing mixup combination', () => {
+            const result = Util.removeNonAlphaNumChars("test@ &éàmultiple WoRds");
+
+            expect(result).toEqual("testmultipleWoRds");
+        });
+
+    });
+
 });

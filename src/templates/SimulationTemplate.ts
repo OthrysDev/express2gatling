@@ -1,4 +1,6 @@
 import Options from '../Options';
+import Util from '../util/Util';
+
 
 const SimulationTemplate = (
     options: Options, 
@@ -35,7 +37,7 @@ class ${options.simulationName} extends Simulation {
     // ==========================================================================================
 
     ${options.feeders.map(feeder => {
-        return `val ${feeder.name}Feeder = Iterator.continually(Map("${feeder.name}" -> ("${feeder.value.replace(/%RANDOM_ALPHANUM%/g, '" + Random.alphanumeric.take(10).mkString + "')}")))`;
+        return `val ${Util.removeNonAlphaNumChars(feeder.name)}Feeder = Iterator.continually(Map("${feeder.name}" -> ("${feeder.value.replace(/%RANDOM_ALPHANUM%/g, '" + Random.alphanumeric.take(10).mkString + "')}")))`;
     }).join("\n\t")}
 
     // ==========================================================================================
@@ -43,7 +45,7 @@ class ${options.simulationName} extends Simulation {
     // ==========================================================================================
 
     val ${options.scenarioName} = scenario("${options.scenarioName}")
-        ${options.feeders.map(feeder => `.feed(${feeder.name}Feeder)`).join("\n\t\t")}
+        ${options.feeders.map(feeder => `.feed(${Util.removeNonAlphaNumChars(feeder.name)}Feeder)`).join("\n\t\t")}
         .exec(
             ${requests.map((r) => `${options.requestsFile}.${r.name},${Array(Math.max(0, 75 - `${options.requestsFile}.${r.name}`.length)).join(" ")}pause(${r.pause} milliseconds),`).join("\n\t\t\t")}
         )

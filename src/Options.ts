@@ -38,7 +38,10 @@ type Options = {
     },
 
     // Feeders
-    feeders: { name: string, value: string}[]
+    feeders: { name: string, value: string}[];
+
+    // Files (for multipart/form-data requests)
+    files: string[];
 };
 
 export const defaultOptions: Options = {
@@ -77,7 +80,10 @@ export const defaultOptions: Options = {
     },
 
     // Feeders
-    feeders: []
+    feeders: [],
+    
+    // Files (for multipart/form-data requests)
+    files: []
 };
 
 

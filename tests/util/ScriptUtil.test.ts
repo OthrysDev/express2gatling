@@ -3,6 +3,7 @@ import ScriptUtil from 'src/util/ScriptUtil';
 import Options, { defaultOptions } from 'src/Options';
 import TestUtil from 'tests/TestUtil';
 import VarUtil from 'src/util/VarUtil';
+import fileUpload from 'express-fileupload';
 
 
 const REQ_MOCK = {
@@ -161,28 +162,65 @@ describe('ScriptUtil', () => {
             const body = { foo: "bar" };
             const result = ScriptUtil.buildBody({ ...URL_ENCODED_REQ_MOCK, body} as express.Request, defaultOptions);
 
-            TestUtil.expectEqualCleansed(result, `.formParam("foo", "bar")`);
+            TestUtil.expectEqualCleansed(result, `.formParam("foo", StringBody("""bar"""))`);
         });
 
         test('Testing an URL-encoded request with multiple keys', () => {
             const body = { foo: "bar", array: ["one", "two", "three"], bool: true };
             const result = ScriptUtil.buildBody({ ...URL_ENCODED_REQ_MOCK, body } as express.Request, defaultOptions);
 
-            TestUtil.expectEqualCleansed(result, `.formParam("foo", "bar").formParam("array", "one,two,three").formParam("bool", "true")`);
+            TestUtil.expectEqualCleansed(result, `.formParam("foo", StringBody("""bar""")).formParam("array", StringBody("""one,two,three""")).formParam("bool", StringBody("""true"""))`);
         });
 
         test('Testing an URL-encoded request with a feeder', () => {
             const body = { foo: "bar" };
             const result = ScriptUtil.buildBody({ ...URL_ENCODED_REQ_MOCK, body } as express.Request, { ...defaultOptions, feeders: [{ name: "foo", value: "" }]});
 
-            TestUtil.expectEqualCleansed(result, `.formParam("foo", "\${foo}")`);
+            TestUtil.expectEqualCleansed(result, `.formParam("foo", StringBody("""\${foo}"""))`);
         });
 
         test('Testing an URL-encoded request with a mix of feeders and regular params', () => {
             const body = { foo: "bar", oof: "rab", baz: "zab" };
             const result = ScriptUtil.buildBody({ ...URL_ENCODED_REQ_MOCK, body } as express.Request, { ...defaultOptions, feeders: [{ name: "foo", value: "" }, { name: "baz", value: "" }]});
 
-            TestUtil.expectEqualCleansed(result, `.formParam("foo", "\${foo}").formParam("oof", "rab").formParam("baz", "\${baz}")`);
+            TestUtil.expectEqualCleansed(result, `.formParam("foo", StringBody("""\${foo}""")).formParam("oof", StringBody("""rab""")).formParam("baz", StringBody("""\${baz}"""))`);
+        });
+
+        test('Testing a multipart request with one uploaded file', () => {
+            const body = { foo: "bar" };
+            const files = { picture: { name: "picture.png" } } as unknown as fileUpload.UploadedFile[];
+            const result = ScriptUtil.buildBody({ ...URL_ENCODED_REQ_MOCK, body, files } as unknown as express.Request, defaultOptions);
+
+            TestUtil.expectEqualCleansed(result, `.formParam("foo", StringBody("""bar""")).formUpload("picture", StringBody("""picture.png"""))`);
+        });
+
+        test('Testing a multipart request with multiple uploaded files', () => {
+            const body = { foo: "bar" };
+            const files = { picture: { name: "picture.png" }, video: { name: "video.png" } } as unknown as fileUpload.UploadedFile[];
+            const result = ScriptUtil.buildBody({ ...URL_ENCODED_REQ_MOCK, body, files } as unknown as express.Request, defaultOptions);
+
+            TestUtil.expectEqualCleansed(result, `.formParam("foo", StringBody("""bar""")).formUpload("picture", StringBody("""picture.png""")).formUpload("video", StringBody("""video.png"""))`);
+        });
+
+        test('Testing a multipart request with a json as a FormData param', () => {
+            const body = { foo: { baz: "bar" } };
+            const result = ScriptUtil.buildBody({ ...URL_ENCODED_REQ_MOCK, body } as unknown as express.Request, defaultOptions);
+
+            TestUtil.expectEqualCleansed(result, `.formParam("foo", StringBody("""{"baz":"bar"}"""))`);
+        });
+
+        test('Testing a multipart request with a stringified json as a FormData param', () => {
+            const body = { foo: `{"baz":"bar"}` };
+            const result = ScriptUtil.buildBody({ ...URL_ENCODED_REQ_MOCK, body } as unknown as express.Request, defaultOptions);
+
+            TestUtil.expectEqualCleansed(result, `.formParam("foo", StringBody("""{"baz":"bar"}"""))`);
+        });
+        
+        test('Testing a multipart request with a stringified json as a FormData param plus feeders', () => {
+            const body = { foo: `{"baz":"bar"}` };
+            const result = ScriptUtil.buildBody({ ...URL_ENCODED_REQ_MOCK, body } as unknown as express.Request, { ...defaultOptions, feeders: [{ name: "baz", value: "" } ]});
+
+            TestUtil.expectEqualCleansed(result, `.formParam("foo", StringBody("""{"baz":"\${baz}"}"""))`);
         });
 
     });
@@ -355,6 +393,40 @@ describe('ScriptUtil', () => {
             const result = ScriptUtil.buildHeaders(HEADERS_REQ_MOCK, options);
 
             TestUtil.expectEqualCleansed(result, `.header("foo", "\${__DYN__}").header("oof", "\${__NYD__}")`);
+        });
+
+        test("Options specify a feeder", () => {
+            const options = {
+                feeders: [{ name: "foo", value: "" }]
+            } as unknown as Options;
+
+            const result = ScriptUtil.buildHeaders(HEADERS_REQ_MOCK, options);
+
+            TestUtil.expectEqualCleansed(result, `.header("foo", "\${foo}").header("oof", "rab")`);
+        });
+
+        test("Options specify multiple feeders", () => {
+            const options = {
+                feeders: [{ name: "foo", value: "" }, { name: "oof", value: "" }]
+            } as unknown as Options;
+
+            const result = ScriptUtil.buildHeaders(HEADERS_REQ_MOCK, options);
+
+            TestUtil.expectEqualCleansed(result, `.header("foo", "\${foo}").header("oof", "\${oof}")`);
+        });
+
+        test("Options specify a feeder with non-standard case", () => {
+            const options = {
+                feeders: [{ name: "foo-bar", value: "" }]
+            } as unknown as Options;
+
+            const result = ScriptUtil.buildHeaders({
+                headers: {
+                    "foo-bar": "bar"
+                }
+            } as unknown as express.Request, options);
+
+            TestUtil.expectEqualCleansed(result, `.header("foo-bar", "\${foo-bar}")`);
         });
 
     });

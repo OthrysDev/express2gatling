@@ -1,4 +1,5 @@
-
+import Options from '../Options';
+import Util from './Util';
 
 export default class GatlingUtil {
 
@@ -15,7 +16,14 @@ export default class GatlingUtil {
     }
 
     public static formParam(key: string, value: string): string {
-        return `.formParam("${key}", "${value}")`;
+        return `.formParam("${key}", StringBody("""${value}"""))`;
+    }
+
+    public static formUpload(key: string, fileName: string, options: Options): string {
+        const fileExtension = Util.extension(fileName);
+        const stubFile = Util.shuffle(options.files).find(file => Util.extension(file) === fileExtension);
+
+        return `.formUpload("${key}", StringBody("""${stubFile || fileName}"""))`;
     }
 
     public static saveHeaderVar(varName: string): string {

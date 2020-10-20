@@ -12,7 +12,11 @@
         "baseUrl": ".",
         "noImplicitAny": true,
         "esModuleInterop": true,
-        "resolveJsonModule": true
+        "resolveJsonModule": true,
+        "typeRoots": [
+            "./types",
+            "node_modules/@types"
+        ]
     },
     "include": [
         "index",
