@@ -3,6 +3,7 @@ import Options from '../Options';
 import VarUtil from './VarUtil';
 import GatlingUtil from '../util/GatlingUtil';
 import Util from '../util/Util';
+import flat from 'flat';
 
 
 export default class ScriptUtil {
@@ -13,7 +14,7 @@ export default class ScriptUtil {
         const requestName = Util.getMethodName(req, options, iterator);
 
         const headers = ScriptUtil.buildHeaders(req, options);
-        const body = ScriptUtil.buildBody(req);
+        const body = ScriptUtil.buildBody(req, options);
         const varsToSave = VarUtil.saveVars(res.getHeaders(), resBody, options);
 
         let request =  `
@@ -47,7 +48,7 @@ export default class ScriptUtil {
         return { name: requestName, script: request, pause: ScriptUtil.getPause() };
     }
 
-    public static buildBody (req: express.Request): string | undefined {
+    public static buildBody(req: express.Request, options: Options): string | undefined {
         let body;
 
         if(req.body && Object.keys(req.body).length > 0){
@@ -56,11 +57,27 @@ export default class ScriptUtil {
 
             // URL encoded
             if(req.headers["content-type"] && req.headers["content-type"] === "application/x-www-form-urlencoded"){
-                for(const k of Object.keys(req.body)) body += GatlingUtil.formParam(k, req.body[k]);
+                for(const k of Object.keys(req.body)){
+                    const hasFeeder = options.feeders.find(feeder => feeder.name === k);
+
+                    if(hasFeeder) body += GatlingUtil.formParam(k, `\${${k}}`);
+                    else body += GatlingUtil.formParam(k, req.body[k]);
+                }
             } 
             // Default (JSON)
             else {
-                body = GatlingUtil.jsonBody(req.body);
+                const reqBody = { ...req.body };
+
+                const flattenedKeys = flat(reqBody);
+                for(const key of Object.keys(flattenedKeys as object)){
+                    const splittedKey = key.split(".");
+                    const lastKey = splittedKey[splittedKey.length - 1];
+                    const hasFeeder = options.feeders.find(feeder => feeder.name === lastKey);
+
+                    if(hasFeeder) reqBody[key] = `\${${lastKey}}`;
+                }
+
+                body = GatlingUtil.jsonBody(reqBody);
             }
         }
         

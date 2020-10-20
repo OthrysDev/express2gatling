@@ -31,12 +31,22 @@ class ${options.simulationName} extends Simulation {
     def pause = (pause:FiniteDuration) => exec().pause(pause);
     
     // ==========================================================================================
+    // ======================================= FEEDERS ==========================================
+    // ==========================================================================================
+
+    ${options.feeders.map(feeder => {
+        return `val ${feeder.name}Feeder = Iterator.continually(Map("${feeder.name}" -> ("${feeder.value.replace(/%RANDOM_ALPHANUM%/g, '" + Random.alphanumeric.take(10).mkString + "')}")))`;
+    }).join("\n\t")}
+
+    // ==========================================================================================
     // ======================================= SCENARIO =========================================
     // ==========================================================================================
 
-    val ${options.scenarioName} = scenario("${options.scenarioName}").exec(
-        ${requests.map((r, i) => `${(i !== 0) ? "\n\t\t" : ""}${options.requestsFile}.${r.name},${Array(Math.max(0, 75 - `${options.requestsFile}.${r.name}`.length)).join(" ")}pause(${r.pause} milliseconds)`)}
-    )
+    val ${options.scenarioName} = scenario("${options.scenarioName}")
+        ${options.feeders.map(feeder => `.feed(${feeder.name}Feeder)`).join("\n\t\t")}
+        .exec(
+            ${requests.map((r) => `${options.requestsFile}.${r.name},${Array(Math.max(0, 75 - `${options.requestsFile}.${r.name}`.length)).join(" ")}pause(${r.pause} milliseconds),`).join("\n\t\t\t")}
+        )
 
     // ==========================================================================================
     // ======================================== SETUP ===========================================

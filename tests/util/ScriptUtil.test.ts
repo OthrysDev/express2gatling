@@ -121,40 +121,68 @@ describe('ScriptUtil', () => {
 
         test('Testing an empty body', () => {
             // JSON
-            const jsonResult = ScriptUtil.buildBody(JSON_REQ_MOCK);
+            const jsonResult = ScriptUtil.buildBody(JSON_REQ_MOCK, defaultOptions);
             expect(jsonResult).toEqual(undefined);
 
             // URL encoded
-            const urlEncResult = ScriptUtil.buildBody(URL_ENCODED_REQ_MOCK);
+            const urlEncResult = ScriptUtil.buildBody(URL_ENCODED_REQ_MOCK, defaultOptions);
             expect(urlEncResult).toEqual(undefined);
         });
 
         test('Testing a JSON request', () => {
             const body = { foo: "bar" };
-            const result = ScriptUtil.buildBody({ ...JSON_REQ_MOCK, body} as express.Request);
+            const result = ScriptUtil.buildBody({ ...JSON_REQ_MOCK, body} as express.Request, defaultOptions);
 
             TestUtil.expectEqualCleansed(result, `.body(StringBody("""{"foo":"bar"}""")).asJson`);
         });
 
         test('Testing a JSON request with multiple keys', () => {
             const body = { foo: "bar", array: ["one", "two", "three"], bool: true };
-            const result = ScriptUtil.buildBody({ ...JSON_REQ_MOCK, body} as express.Request);
+            const result = ScriptUtil.buildBody({ ...JSON_REQ_MOCK, body} as express.Request, defaultOptions);
 
             TestUtil.expectEqualCleansed(result, `.body(StringBody("""{"foo":"bar","array":["one","two","three"],"bool":true}""")).asJson`);
         });
 
+        test('Testing a JSON request with a feeder', () => {
+            const body = { foo: "bar" };
+            const result = ScriptUtil.buildBody({ ...JSON_REQ_MOCK, body } as express.Request, { ...defaultOptions, feeders: [{ name: "foo", value: "" }]});
+
+            TestUtil.expectEqualCleansed(result, `.body(StringBody("""{"foo":"\${foo}"}""")).asJson`);
+        });
+
+        test('Testing a JSON request with a mix of feeders and regular params', () => {
+            const body = { foo: "bar", oof: "rab", baz: "zab" };
+            const result = ScriptUtil.buildBody({ ...JSON_REQ_MOCK, body } as express.Request, { ...defaultOptions, feeders: [{ name: "foo", value: "" }, { name: "baz", value: "" }]});
+
+            TestUtil.expectEqualCleansed(result, `.body(StringBody("""{"foo":"\${foo}","oof":"rab","baz":"\${baz}"}""")).asJson`);
+        });
+
         test('Testing an URL-encoded request', () => {
             const body = { foo: "bar" };
-            const result = ScriptUtil.buildBody({ ...URL_ENCODED_REQ_MOCK, body} as express.Request);
+            const result = ScriptUtil.buildBody({ ...URL_ENCODED_REQ_MOCK, body} as express.Request, defaultOptions);
 
             TestUtil.expectEqualCleansed(result, `.formParam("foo", "bar")`);
         });
 
         test('Testing an URL-encoded request with multiple keys', () => {
             const body = { foo: "bar", array: ["one", "two", "three"], bool: true };
-            const result = ScriptUtil.buildBody({ ...URL_ENCODED_REQ_MOCK, body } as express.Request);
+            const result = ScriptUtil.buildBody({ ...URL_ENCODED_REQ_MOCK, body } as express.Request, defaultOptions);
 
             TestUtil.expectEqualCleansed(result, `.formParam("foo", "bar").formParam("array", "one,two,three").formParam("bool", "true")`);
+        });
+
+        test('Testing an URL-encoded request with a feeder', () => {
+            const body = { foo: "bar" };
+            const result = ScriptUtil.buildBody({ ...URL_ENCODED_REQ_MOCK, body } as express.Request, { ...defaultOptions, feeders: [{ name: "foo", value: "" }]});
+
+            TestUtil.expectEqualCleansed(result, `.formParam("foo", "\${foo}")`);
+        });
+
+        test('Testing an URL-encoded request with a mix of feeders and regular params', () => {
+            const body = { foo: "bar", oof: "rab", baz: "zab" };
+            const result = ScriptUtil.buildBody({ ...URL_ENCODED_REQ_MOCK, body } as express.Request, { ...defaultOptions, feeders: [{ name: "foo", value: "" }, { name: "baz", value: "" }]});
+
+            TestUtil.expectEqualCleansed(result, `.formParam("foo", "\${foo}").formParam("oof", "rab").formParam("baz", "\${baz}")`);
         });
 
     });

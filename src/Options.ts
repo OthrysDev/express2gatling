@@ -35,7 +35,10 @@ type Options = {
             headers?: { name: string, value: string }[],
             body?: { name: string, value: string }[],
         }
-    }
+    },
+
+    // Feeders
+    feeders: { name: string, value: string}[]
 };
 
 export const defaultOptions: Options = {
@@ -71,7 +74,10 @@ export const defaultOptions: Options = {
             headers: [],
             body: []
         }
-    }
+    },
+
+    // Feeders
+    feeders: []
 };
 
 
