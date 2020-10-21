@@ -15,8 +15,6 @@ import scala.concurrent.duration._
 import scala.util.Random
 import scala.concurrent.duration.FiniteDuration
 
-import ${options.packageName}.${options.requestsFile}
-
 
 class ${options.simulationName} extends Simulation {
 
