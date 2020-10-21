@@ -18,23 +18,15 @@ export default class VarUtil {
         return VarUtil.varsCache.has(`%${varName}%`);
     }
 
-    public static saveVars (resHeaders: any, parsedBody: any | undefined, options: Options): string | undefined {
+    public static saveVars (resHeaders: any, parsedBody: any | undefined, options: Options): string[] {
         const headers = VarUtil.saveHeadersVars(resHeaders, options);
         const body = VarUtil.saveBodyVars(parsedBody, options);
         
-        // Careful with the concatenation : both variables can be undefined
-        let result;
-        if(headers) result = headers;
-        if(body){
-            if(!headers) result = body;
-            else result += `\n\t\t\t${body}`;
-        } 
-
-        return result;
+        return [ ...headers, ...body ];
     }
 
-    public static saveHeadersVars (resHeaders: any, options: Options): string | undefined {
-        let headers;
+    public static saveHeadersVars (resHeaders: any, options: Options): string[] {
+        const headers: string[] = [];
 
         if(resHeaders && Object.keys(resHeaders).length > 0){
             // Shall we save variables?
@@ -49,11 +41,8 @@ export default class VarUtil {
                 // Remember which vars were saved
                 for(const v of varsToSave) VarUtil.addVar(v);
                 
-                // Modify the request script so that it saves the variable
-                headers = '';
-
                 for(const v of varsToSave){
-                    headers += GatlingUtil.saveHeaderVar(v);
+                    headers.push(GatlingUtil.saveHeaderVar(v));
                 }
             }
         }
@@ -61,8 +50,8 @@ export default class VarUtil {
         return headers;
     }
 
-    public static saveBodyVars (parsedBody: any | undefined, options: Options): string | undefined {
-        let body;
+    public static saveBodyVars (parsedBody: any | undefined, options: Options): string[] {
+        const body: string[] = [];
 
         if(parsedBody && Object.keys(parsedBody).length > 0){
             // Shall we save variables?
@@ -77,11 +66,8 @@ export default class VarUtil {
                 // Remember which vars were saved
                 for(const v of varsToSave) VarUtil.addVar(v);
                 
-                // Modify the request script so that it saves the variable
-                body = '';
-
                 for(const v of varsToSave){
-                    body += GatlingUtil.saveBodyVar(v);
+                    body.push(GatlingUtil.saveBodyVar(v));
                 }
             }
         }
@@ -105,4 +91,5 @@ export default class VarUtil {
         
         return GatlingUtil.header(key, newValue);
     }
+
 }

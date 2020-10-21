@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import express from 'express';
 import Options from '../Options';
 
@@ -38,5 +39,9 @@ export default class Util {
 
     public static removeNonAlphaNumChars(str: string): string {
         return str.replace(/\W/g, '');
+    }
+
+    public static isMongooseObjectId(obj: any): boolean {
+        return Boolean(obj && mongoose.Types.ObjectId.isValid(obj));
     }
 }

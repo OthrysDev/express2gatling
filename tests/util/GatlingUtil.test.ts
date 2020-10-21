@@ -1,4 +1,4 @@
-import Options, { defaultOptions } from 'src/Options';
+import { defaultOptions } from 'src/Options';
 import GatlingUtil from 'src/util/GatlingUtil';
 import TestUtil from 'tests/TestUtil';
 

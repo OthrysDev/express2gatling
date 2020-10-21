@@ -4,6 +4,12 @@
 type Options = {
     verbose: boolean;
 
+    // Run requests sequentially? (or concurrently?)
+    runSequentially: boolean;
+
+    // Whether (or not) to try & match Mongo ObjectIds together
+    activateObjectIdMatching: boolean;
+
     // Naming (files, scripts etc.)
     rootFolder: string;
     simulationFolder: string;
@@ -46,6 +52,12 @@ type Options = {
 
 export const defaultOptions: Options = {
     verbose: false,
+
+    // Run requests sequentially? (or concurrently?)
+    runSequentially: false,
+
+    // Whether (or not) to try & match Mongo ObjectIds together
+    activateObjectIdMatching: false,
 
     // Naming (files, scripts etc.)
     rootFolder: "./gatling/simulations",

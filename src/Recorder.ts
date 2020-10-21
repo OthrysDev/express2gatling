@@ -4,6 +4,8 @@ import fs from 'fs';
 import SimulationTemplate from './templates/SimulationTemplate';
 import RequestsTemplate from './templates/RequestsTemplate';
 import ScriptUtil from './util/ScriptUtil';
+import IRecordedRequest from './types/IRecordedRequest';
+import MongoUtil from './util/MongoUtil';
 
 
 class Recorder {
@@ -12,7 +14,7 @@ class Recorder {
 
     private iterator = 0;
 
-    public recording: { host: string | undefined; requests: { name: string; script: string; pause: number }[]; } = {
+    public recording: { host: string | undefined; requests: IRecordedRequest[]; } = {
         host: undefined,
         requests: []
     };
@@ -47,14 +49,13 @@ class Recorder {
         };
 
         res.on('finish', () => {
-            let resBody;
+            let resBody = {};
             try {
                 const body: string = Buffer.concat(chunks).toString('utf8');
                 
                 if(body && body.length > 0) resBody = JSON.parse(body);
             } catch (e) {
                 // Will happen if response is a file, for example
-                return;
             }
 
             // Increase iterator. Will help keep things' names unique
@@ -79,6 +80,11 @@ class Recorder {
 
         // Create output directory & file
         fs.mkdirSync(folder, { recursive: true });
+
+        // Add Mongo ObjectId matching
+        if(this.options.activateObjectIdMatching){
+            MongoUtil.addMongoObjectIdMatching(this.recording.requests);
+        }
 
         // Add main simulation script
         const simulationScriptWS = fs.createWriteStream(simulationFile);

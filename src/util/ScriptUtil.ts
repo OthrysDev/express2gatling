@@ -5,76 +5,57 @@ import GatlingUtil from '../util/GatlingUtil';
 import Util from '../util/Util';
 import flat from 'flat';
 import fileUpload from 'express-fileupload';
+import IRecordedRequest from '../types/IRecordedRequest';
 
 
 export default class ScriptUtil {
 
     private static dateMarker: Date | undefined;
 
-    public static buildRequest(req: express.Request, res: express.Response, resBody: any, options: Options, iterator: number): { name: string, script: string, pause: number} {
-        const requestName = Util.getMethodName(req, options, iterator);
+    public static buildRequest(req: express.Request, res: express.Response, resBody: any, options: Options, iterator: number): IRecordedRequest {
+        const name = Util.getMethodName(req, options, iterator);
 
         const headers = ScriptUtil.buildHeaders(req, options);
         const body = ScriptUtil.buildBody(req, options);
         const varsToSave = VarUtil.saveVars(res.getHeaders(), resBody, options);
 
-        let request =  `
-    val ${requestName} = 
-        exec(
-            http("${Util.getMethodDesc(req, options, iterator)}")
-            .${req.method.toLowerCase()}("${req.path}")`;
-
-        if(headers) request += `\n\t\t\t${headers}`;
-        if(body) request += `\n\t\t\t${body}`;
-        if(varsToSave) request +=  `\n\t\t\t${varsToSave}`;
-
-        // Verbose : save the body
-        if(options.verbose){
-            request += `\n\t\t\t.check(bodyString.saveAs("__BODY__"))`;
-        }
-
-        request += `\n\t\t)`;
-
-        // Verbose: print the body
-        if(options.verbose){
-            request += `
-        .exec(session => {
-            println("${Util.getMethodDesc(req, options, iterator)}")
-            println(session("__BODY__").as[String])
-            session
-        })
-        `;
-        }
-
-        return { name: requestName, script: request, pause: ScriptUtil.getPause() };
+        return { 
+            name, 
+            desc: Util.getMethodDesc(req, options, iterator),
+            method: req.method,
+            path: req.path,
+            headers, 
+            body, 
+            varsToSave,
+            originalReqBody: req.body,
+            originalResBody: resBody,
+            pause: ScriptUtil.getPause()
+        };
     }
 
-    public static buildBody(req: express.Request, options: Options): string | undefined {
-        let body;
+    public static buildBody(req: express.Request, options: Options): string[] {
+        const body: string[] = [];
 
         if(req.body && Object.keys(req.body).length > 0){
-            // Initialize body
-            body = '';
-
             // URL encoded
             if(req.headers["content-type"] && (req.headers["content-type"] === "application/x-www-form-urlencoded" || req.headers["content-type"].includes("multipart/form-data"))){
                 for(const k of Object.keys(req.body)){
                     const hasFeeder = options.feeders?.find(feeder => feeder.name === k);
                     
                     if(hasFeeder) {
-                        body += GatlingUtil.formParam(k, `\${${k}}`);
+                        body.push(GatlingUtil.formParam(k, `\${${k}}`));
                     }
                     else {
                         if(Util.isJson(req.body[k])){
                             const injectedVal = ScriptUtil.injectFeedersIntoJson(req.body[k], options.feeders);
 
-                            body += GatlingUtil.formParam(k, JSON.stringify(injectedVal));
+                            body.push(GatlingUtil.formParam(k, JSON.stringify(injectedVal)));
                         } else if(Util.stringIsJson(req.body[k])) {
                             const injectedVal = ScriptUtil.injectFeedersIntoJson(JSON.parse(req.body[k]), options.feeders);
 
-                            body += GatlingUtil.formParam(k, JSON.stringify(injectedVal));
+                            body.push(GatlingUtil.formParam(k, JSON.stringify(injectedVal)));
                         } else {
-                            body += GatlingUtil.formParam(k, req.body[k]);
+                            body.push(GatlingUtil.formParam(k, req.body[k]));
                         }
                     } 
                 }
@@ -83,21 +64,21 @@ export default class ScriptUtil {
                 if(req.files){
                     for(const key of Object.keys(req.files)){
                         const file = req.files[key] as fileUpload.UploadedFile;
-                        body += `\n\t\t\t${GatlingUtil.formUpload(key, file.name, options)}`;
+                        body.push(GatlingUtil.formUpload(key, file.name, options));
                     }
                 }
             }
             // Default (JSON)
             else {
-                body = GatlingUtil.jsonBody(ScriptUtil.injectFeedersIntoJson(req.body, options.feeders));
+                body.push(GatlingUtil.jsonBody(ScriptUtil.injectFeedersIntoJson(req.body, options.feeders)));
             }
         }
         
         return body;
     }
 
-    public static buildHeaders (req: express.Request, options: Options): string | undefined {
-        let headers;
+    public static buildHeaders (req: express.Request, options: Options): string[] {
+        const headers: string[] = [];
 
         if(req && req.headers){
             for(let key of Object.keys(req.headers)){
@@ -107,9 +88,6 @@ export default class ScriptUtil {
                 // Hacky workaround because body-parser seems to care about the case
                 const value = req.headers[key] as string;
                 if(key.toLowerCase() === "content-type") key = "Content-Type";
-
-                // Initialize the headers var 
-                if(!headers) headers = '';
 
                 // If the variable has been saved by a previous request, use saved value
                 let h = '';
@@ -134,8 +112,7 @@ export default class ScriptUtil {
                     else h = GatlingUtil.header(key, value);
                 }
 
-                if(headers.length === 0) headers += `${h}`;
-                else headers += `\n\t\t\t${h}`;
+                headers.push(h);
             }
         }
 

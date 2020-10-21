@@ -132,4 +132,31 @@ describe('Util', () => {
 
     });
 
+    describe('isMongooseObjectId()', () => {
+
+        test('Testing an ObjectId', () => {
+            const result = Util.isMongooseObjectId("5f71a00f9e93912e30ada343");
+
+            expect(result).toEqual(true);
+        });
+
+        test('Testing a non-ObjectId', () => {
+            const result = Util.isMongooseObjectId("foo");
+
+            expect(result).toEqual(false);
+        });
+
+        test('Testing a non-ObjectId with the size of an ObjectId', () => {
+            const result = Util.isMongooseObjectId("azertyuiopqsdfghjklmwxcv");
+
+            expect(result).toEqual(false);
+        });
+
+        test('Testing null & undefined', () => {
+            expect(Util.isMongooseObjectId(null)).toEqual(false);
+            expect(Util.isMongooseObjectId(undefined)).toEqual(false);
+        });
+
+    });
+
 });

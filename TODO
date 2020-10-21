@@ -1,1 +1,7 @@
-- Check that options are correct (ie file names are correctly formatted etc.)
+- Check that options are correct (ie file names are correctly formatted etc.) ?
+- Fix tests : removed hardcoded strings, use GatlingUtil.blabla (see ScriptUtil.test)
+- Give a better name to the unique script function when running sequentially
+
+Mongo ObjectIds injection :
+- Fix flatten handling of arrays : 'foo.0' => 'foo[0]'
+- Add injection into body & headers

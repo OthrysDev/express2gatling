@@ -91,7 +91,9 @@ Here's the full list of options available :
 
 | Name | Type | Default value | Description |
 | ---- | ---- | ------------- | ----------- |
-| verbose | boolean | false | Wether or not to create verbose Gatling scripts, that will output reponse bodies etc. |
+| verbose | boolean | false | Whether or not to create verbose Gatling scripts, that will output reponse bodies etc. |
+| runSequentially | boolean | false | If true the requests will be sent sequentially rather than concurrently |
+| activateObjectIdMatching | boolean | false | Whether or not to do an automatic Mongo ObjectId matching. See dedicated paragraph |
 | rootFolder | string | "./gatling/simulations" | The folder in which the scripts will be outputted to |
 | simulationFolder | string | "simulation1" | The folder within the rootFolder in which your simulation which be outputted to |
 | simulationName | string | "Simulation1" | The name of your simulation (will be the name of the main scala file) |
@@ -108,6 +110,14 @@ Here's the full list of options available :
 | variables.inject.body | { name: string, value: string }[] | [] | Values you want to inject in the body. Can be a combination of hardcoded values and stored variables, for instance : { name: "foo", value: "foo %bar%" } (given that %bar% is a variable you have previously saved via variables.save. If %bar% has not be captured yet the injection won't work and will default to the initial value) |
 | feeders | { name: string, value: string }[] | [] | Enables you to inject data tied to a (stress test) user session. For example, { name: "email", value: "user.%RANDOM_ALPHANUM%@mail.com" } will generate a randomized email for each of your fake users and will be injected in the 'email' variables in the body |
 | assetsFolder | string | '' | The absolute path of the folder containing all the assets your end-user will upload during the recording of the stress test. File upload won't work unless specified |
+
+## Mongo ObjectId matching
+
+When scripting a stress test, a very common struggle is to reuse part of the response from the server in a further request. For instance, the server might respond with an id, (say, a post id), and your next request must fetch said post (by its id). When you'll use the recorder, it will work just fine because the post id will be hardcoded; but this won't work for more than one user.
+
+Mongo has a very interesting design that makes all ids (ObjectIds) unique, no matter the collection. If you switch the boolean `activateObjectIdMatching` in the options, express2gatling will try to automatically make sense of the exchanged ObjectIds and save/inject them where appropriate.
+
+Needless to say, this will only work for Mongo ObjectIds.
 
 ## People
 

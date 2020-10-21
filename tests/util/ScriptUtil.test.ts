@@ -44,75 +44,74 @@ describe('ScriptUtil', () => {
     describe('buildRequest()', () => {
 
         test('Testing a standard request', () => {
-            jest.spyOn(ScriptUtil, 'buildHeaders').mockImplementation(() => '.mockedHeaders')
-            jest.spyOn(ScriptUtil, 'buildBody').mockImplementation(() => '.mockedBody');
-            jest.spyOn(VarUtil, 'saveVars').mockImplementation(() => '.mockedSaveVars');
+            jest.spyOn(ScriptUtil, 'buildHeaders').mockImplementation(() => ['.mockedHeaders'])
+            jest.spyOn(ScriptUtil, 'buildBody').mockImplementation(() => ['.mockedBody']);
+            jest.spyOn(VarUtil, 'saveVars').mockImplementation(() => ['.mockedSaveVars']);
             jest.spyOn(ScriptUtil, 'getPause').mockImplementation(() => 777);
 
             const result = ScriptUtil.buildRequest(REQ_MOCK, RES_MOCK, {}, defaultOptions, 0);
 
             expect(result.name).toEqual("get_foo_0");
-            TestUtil.expectEqualCleansed(result.script, `val get_foo_0 = exec(http("GET foo").get("/foo/bar").mockedHeaders.mockedBody.mockedSaveVars)`);
+            expect(result.method).toEqual("GET");
+            expect(result.desc).toEqual("GET foo");
+            expect(result.path).toEqual("/foo/bar");
+            expect(result.headers).toEqual([".mockedHeaders"]);
+            expect(result.body).toEqual([".mockedBody"]);
+            expect(result.varsToSave).toEqual([".mockedSaveVars"]);
             expect(result.pause).toEqual(777);
         });
 
         test('Request with no body', () => {
-            jest.spyOn(ScriptUtil, 'buildHeaders').mockImplementation(() => '.mockedHeaders')
-            jest.spyOn(ScriptUtil, 'buildBody').mockImplementation(() => undefined);
-            jest.spyOn(VarUtil, 'saveVars').mockImplementation(() => '.mockedSaveVars');
+            jest.spyOn(ScriptUtil, 'buildHeaders').mockImplementation(() => ['.mockedHeaders'])
+            jest.spyOn(ScriptUtil, 'buildBody').mockImplementation(() => []);
+            jest.spyOn(VarUtil, 'saveVars').mockImplementation(() => ['.mockedSaveVars']);
             jest.spyOn(ScriptUtil, 'getPause').mockImplementation(() => 777);
 
             const result = ScriptUtil.buildRequest(REQ_MOCK, RES_MOCK, {}, defaultOptions, 0);
 
             expect(result.name).toEqual("get_foo_0");
-            TestUtil.expectEqualCleansed(result.script, `val get_foo_0 = exec(http("GET foo").get("/foo/bar").mockedHeaders.mockedSaveVars)`);
+            expect(result.method).toEqual("GET");
+            expect(result.desc).toEqual("GET foo");
+            expect(result.path).toEqual("/foo/bar");
+            expect(result.headers).toEqual([".mockedHeaders"]);
+            expect(result.body).toEqual([]);
+            expect(result.varsToSave).toEqual([".mockedSaveVars"]);
             expect(result.pause).toEqual(777);
         });
 
         test('Request with no headers', () => {
-            jest.spyOn(ScriptUtil, 'buildHeaders').mockImplementation(() => undefined)
-            jest.spyOn(ScriptUtil, 'buildBody').mockImplementation(() => '.mockedBody');
-            jest.spyOn(VarUtil, 'saveVars').mockImplementation(() => '.mockedSaveVars');
+            jest.spyOn(ScriptUtil, 'buildHeaders').mockImplementation(() => [])
+            jest.spyOn(ScriptUtil, 'buildBody').mockImplementation(() => ['.mockedBody']);
+            jest.spyOn(VarUtil, 'saveVars').mockImplementation(() => ['.mockedSaveVars']);
             jest.spyOn(ScriptUtil, 'getPause').mockImplementation(() => 777);
 
             const result = ScriptUtil.buildRequest(REQ_MOCK, RES_MOCK, {}, defaultOptions, 0);
 
             expect(result.name).toEqual("get_foo_0");
-            TestUtil.expectEqualCleansed(result.script, `val get_foo_0 = exec(http("GET foo").get("/foo/bar").mockedBody.mockedSaveVars)`);
+            expect(result.method).toEqual("GET");
+            expect(result.desc).toEqual("GET foo");
+            expect(result.path).toEqual("/foo/bar");
+            expect(result.headers).toEqual([]);
+            expect(result.body).toEqual([".mockedBody"]);
+            expect(result.varsToSave).toEqual([".mockedSaveVars"]);
             expect(result.pause).toEqual(777);
         });
 
         test('Request with no saved vars', () => {
-            jest.spyOn(ScriptUtil, 'buildHeaders').mockImplementation(() => '.mockedHeaders')
-            jest.spyOn(ScriptUtil, 'buildBody').mockImplementation(() => '.mockedBody');
-            jest.spyOn(VarUtil, 'saveVars').mockImplementation(() => undefined)
+            jest.spyOn(ScriptUtil, 'buildHeaders').mockImplementation(() => ['.mockedHeaders'])
+            jest.spyOn(ScriptUtil, 'buildBody').mockImplementation(() => ['.mockedBody']);
+            jest.spyOn(VarUtil, 'saveVars').mockImplementation(() => [])
             jest.spyOn(ScriptUtil, 'getPause').mockImplementation(() => 777);
 
             const result = ScriptUtil.buildRequest(REQ_MOCK, RES_MOCK, {}, defaultOptions, 0);
 
             expect(result.name).toEqual("get_foo_0");
-            TestUtil.expectEqualCleansed(result.script, `val get_foo_0 = exec(http("GET foo").get("/foo/bar").mockedHeaders.mockedBody)`);
-            expect(result.pause).toEqual(777);
-        });
-
-        test('Testing a standard request with verbose mode on', () => {
-            jest.spyOn(ScriptUtil, 'buildHeaders').mockImplementation(() => '.mockedHeaders')
-            jest.spyOn(ScriptUtil, 'buildBody').mockImplementation(() => '.mockedBody');
-            jest.spyOn(VarUtil, 'saveVars').mockImplementation(() => '.mockedSaveVars');
-            jest.spyOn(ScriptUtil, 'getPause').mockImplementation(() => 777);
-
-            const result = ScriptUtil.buildRequest(REQ_MOCK, RES_MOCK, {}, { ...defaultOptions, verbose: true }, 0);
-
-            expect(result.name).toEqual("get_foo_0");
-            TestUtil.expectEqualCleansed(result.script, `val get_foo_0 = exec(http("GET foo").get("/foo/bar")
-                .mockedHeaders
-                .mockedBody
-                .mockedSaveVars
-                .check(bodyString.saveAs("__BODY__"))).exec(session => {
-                    println("GET foo")
-                    println(session("__BODY__").as[String])
-                    session
-                })`);
+            expect(result.method).toEqual("GET");
+            expect(result.desc).toEqual("GET foo");
+            expect(result.path).toEqual("/foo/bar");
+            expect(result.headers).toEqual([".mockedHeaders"]);
+            expect(result.body).toEqual([".mockedBody"]);
+            expect(result.varsToSave).toEqual([]);
             expect(result.pause).toEqual(777);
         });
 
@@ -123,67 +122,67 @@ describe('ScriptUtil', () => {
         test('Testing an empty body', () => {
             // JSON
             const jsonResult = ScriptUtil.buildBody(JSON_REQ_MOCK, defaultOptions);
-            expect(jsonResult).toEqual(undefined);
+            expect(jsonResult).toEqual([]);
 
             // URL encoded
             const urlEncResult = ScriptUtil.buildBody(URL_ENCODED_REQ_MOCK, defaultOptions);
-            expect(urlEncResult).toEqual(undefined);
+            expect(urlEncResult).toEqual([]);
         });
 
         test('Testing a JSON request', () => {
             const body = { foo: "bar" };
             const result = ScriptUtil.buildBody({ ...JSON_REQ_MOCK, body} as express.Request, defaultOptions);
 
-            TestUtil.expectEqualCleansed(result, `.body(StringBody("""{"foo":"bar"}""")).asJson`);
+            expect(result).toEqual([`.body(StringBody("""{"foo":"bar"}""")).asJson`]);
         });
 
         test('Testing a JSON request with multiple keys', () => {
             const body = { foo: "bar", array: ["one", "two", "three"], bool: true };
             const result = ScriptUtil.buildBody({ ...JSON_REQ_MOCK, body} as express.Request, defaultOptions);
 
-            TestUtil.expectEqualCleansed(result, `.body(StringBody("""{"foo":"bar","array":["one","two","three"],"bool":true}""")).asJson`);
+            expect(result).toEqual([`.body(StringBody("""{"foo":"bar","array":["one","two","three"],"bool":true}""")).asJson`]);
         });
 
         test('Testing a JSON request with a feeder', () => {
             const body = { foo: "bar" };
             const result = ScriptUtil.buildBody({ ...JSON_REQ_MOCK, body } as express.Request, { ...defaultOptions, feeders: [{ name: "foo", value: "" }]});
 
-            TestUtil.expectEqualCleansed(result, `.body(StringBody("""{"foo":"\${foo}"}""")).asJson`);
+            expect(result).toEqual([`.body(StringBody("""{"foo":"\${foo}"}""")).asJson`]);
         });
 
         test('Testing a JSON request with a mix of feeders and regular params', () => {
             const body = { foo: "bar", oof: "rab", baz: "zab" };
             const result = ScriptUtil.buildBody({ ...JSON_REQ_MOCK, body } as express.Request, { ...defaultOptions, feeders: [{ name: "foo", value: "" }, { name: "baz", value: "" }]});
 
-            TestUtil.expectEqualCleansed(result, `.body(StringBody("""{"foo":"\${foo}","oof":"rab","baz":"\${baz}"}""")).asJson`);
+            expect(result).toEqual([`.body(StringBody("""{"foo":"\${foo}","oof":"rab","baz":"\${baz}"}""")).asJson`]);
         });
 
         test('Testing an URL-encoded request', () => {
             const body = { foo: "bar" };
             const result = ScriptUtil.buildBody({ ...URL_ENCODED_REQ_MOCK, body} as express.Request, defaultOptions);
 
-            TestUtil.expectEqualCleansed(result, `.formParam("foo", StringBody("""bar"""))`);
+            expect(result).toEqual([`.formParam("foo", StringBody("""bar"""))`]);
         });
 
         test('Testing an URL-encoded request with multiple keys', () => {
             const body = { foo: "bar", array: ["one", "two", "three"], bool: true };
             const result = ScriptUtil.buildBody({ ...URL_ENCODED_REQ_MOCK, body } as express.Request, defaultOptions);
 
-            TestUtil.expectEqualCleansed(result, `.formParam("foo", StringBody("""bar""")).formParam("array", StringBody("""one,two,three""")).formParam("bool", StringBody("""true"""))`);
+            expect(result).toEqual([`.formParam("foo", StringBody("""bar"""))`, `.formParam("array", StringBody("""one,two,three"""))`, `.formParam("bool", StringBody("""true"""))`]);
         });
 
         test('Testing an URL-encoded request with a feeder', () => {
             const body = { foo: "bar" };
             const result = ScriptUtil.buildBody({ ...URL_ENCODED_REQ_MOCK, body } as express.Request, { ...defaultOptions, feeders: [{ name: "foo", value: "" }]});
 
-            TestUtil.expectEqualCleansed(result, `.formParam("foo", StringBody("""\${foo}"""))`);
+            expect(result).toEqual([`.formParam("foo", StringBody("""\${foo}"""))`]);
         });
 
         test('Testing an URL-encoded request with a mix of feeders and regular params', () => {
             const body = { foo: "bar", oof: "rab", baz: "zab" };
             const result = ScriptUtil.buildBody({ ...URL_ENCODED_REQ_MOCK, body } as express.Request, { ...defaultOptions, feeders: [{ name: "foo", value: "" }, { name: "baz", value: "" }]});
 
-            TestUtil.expectEqualCleansed(result, `.formParam("foo", StringBody("""\${foo}""")).formParam("oof", StringBody("""rab""")).formParam("baz", StringBody("""\${baz}"""))`);
+            expect(result).toEqual([`.formParam("foo", StringBody("""\${foo}"""))`, `.formParam("oof", StringBody("""rab"""))`, `.formParam("baz", StringBody("""\${baz}"""))`]);
         });
 
         test('Testing a multipart request with one uploaded file', () => {
@@ -191,7 +190,7 @@ describe('ScriptUtil', () => {
             const files = { picture: { name: "picture.png" } } as unknown as fileUpload.UploadedFile[];
             const result = ScriptUtil.buildBody({ ...URL_ENCODED_REQ_MOCK, body, files } as unknown as express.Request, defaultOptions);
 
-            TestUtil.expectEqualCleansed(result, `.formParam("foo", StringBody("""bar""")).formUpload("picture", StringBody("""picture.png"""))`);
+            expect(result).toEqual([`.formParam("foo", StringBody("""bar"""))`, `.formUpload("picture", StringBody("""picture.png"""))`]);
         });
 
         test('Testing a multipart request with multiple uploaded files', () => {
@@ -199,28 +198,28 @@ describe('ScriptUtil', () => {
             const files = { picture: { name: "picture.png" }, video: { name: "video.png" } } as unknown as fileUpload.UploadedFile[];
             const result = ScriptUtil.buildBody({ ...URL_ENCODED_REQ_MOCK, body, files } as unknown as express.Request, defaultOptions);
 
-            TestUtil.expectEqualCleansed(result, `.formParam("foo", StringBody("""bar""")).formUpload("picture", StringBody("""picture.png""")).formUpload("video", StringBody("""video.png"""))`);
+            expect(result).toEqual([`.formParam("foo", StringBody("""bar"""))`, `.formUpload("picture", StringBody("""picture.png"""))`, `.formUpload("video", StringBody("""video.png"""))`]);
         });
 
         test('Testing a multipart request with a json as a FormData param', () => {
             const body = { foo: { baz: "bar" } };
             const result = ScriptUtil.buildBody({ ...URL_ENCODED_REQ_MOCK, body } as unknown as express.Request, defaultOptions);
 
-            TestUtil.expectEqualCleansed(result, `.formParam("foo", StringBody("""{"baz":"bar"}"""))`);
+            expect(result).toEqual([`.formParam("foo", StringBody("""{"baz":"bar"}"""))`]);
         });
 
         test('Testing a multipart request with a stringified json as a FormData param', () => {
             const body = { foo: `{"baz":"bar"}` };
             const result = ScriptUtil.buildBody({ ...URL_ENCODED_REQ_MOCK, body } as unknown as express.Request, defaultOptions);
 
-            TestUtil.expectEqualCleansed(result, `.formParam("foo", StringBody("""{"baz":"bar"}"""))`);
+            expect(result).toEqual([`.formParam("foo", StringBody("""{"baz":"bar"}"""))`]);
         });
         
         test('Testing a multipart request with a stringified json as a FormData param plus feeders', () => {
             const body = { foo: `{"baz":"bar"}` };
             const result = ScriptUtil.buildBody({ ...URL_ENCODED_REQ_MOCK, body } as unknown as express.Request, { ...defaultOptions, feeders: [{ name: "baz", value: "" } ]});
 
-            TestUtil.expectEqualCleansed(result, `.formParam("foo", StringBody("""{"baz":"\${baz}"}"""))`);
+            expect(result).toEqual([`.formParam("foo", StringBody("""{"baz":"\${baz}"}"""))`]);
         });
 
     });
@@ -238,7 +237,7 @@ describe('ScriptUtil', () => {
 
             const result = ScriptUtil.buildHeaders(HEADERS_REQ_MOCK, options);
 
-            TestUtil.expectEqualCleansed(result, `.header("foo", "bar").header("oof", "rab")`);
+            expect(result).toEqual([`.header("foo", "bar")`, `.header("oof", "rab")`]);
         });
 
         test('Options specify to include only targeted headers', () => {
@@ -253,14 +252,14 @@ describe('ScriptUtil', () => {
 
             const result = ScriptUtil.buildHeaders(HEADERS_REQ_MOCK, options);
 
-            TestUtil.expectEqualCleansed(result, `.header("foo", "bar")`);
+            expect(result).toEqual([`.header("foo", "bar")`]);
         });
 
         // Workaround
         test('[Workaround] Options specify content-type : make sure it has the right case', () => {
             const result = ScriptUtil.buildHeaders({ headers: { "content-type": "bar" } } as unknown as express.Request, defaultOptions);
 
-            TestUtil.expectEqualCleansed(result, `.header("Content-Type", "bar")`);
+            expect(result).toEqual([`.header("Content-Type", "bar")`]);
         });
 
         test('Options specify to include no header at all', () => {
@@ -275,7 +274,7 @@ describe('ScriptUtil', () => {
 
             const result = ScriptUtil.buildHeaders(HEADERS_REQ_MOCK, options);
 
-            expect(result).toEqual(undefined);
+            expect(result).toEqual([]);
         });
 
         test('Options specify to include multiple headers', () => {
@@ -290,7 +289,7 @@ describe('ScriptUtil', () => {
 
             const result = ScriptUtil.buildHeaders(HEADERS_REQ_MOCK, options);
 
-            TestUtil.expectEqualCleansed(result, `.header("foo", "bar").header("oof", "rab")`);
+            expect(result).toEqual([`.header("foo", "bar")`, `.header("oof", "rab")`]);
         });
 
         test('Options specify to include non-existing headers - should not crash', () => {
@@ -305,7 +304,7 @@ describe('ScriptUtil', () => {
 
             const result = ScriptUtil.buildHeaders(HEADERS_REQ_MOCK, options);
 
-            TestUtil.expectEqualCleansed(result, `.header("foo", "bar")`);
+            expect(result).toEqual([`.header("foo", "bar")`]);
         });
 
         test('Options specify to inject hardcoded values', () => {
@@ -322,7 +321,7 @@ describe('ScriptUtil', () => {
 
             const result = ScriptUtil.buildHeaders(HEADERS_REQ_MOCK, options);
 
-            TestUtil.expectEqualCleansed(result, `.header("foo", "hard").header("oof", "drah")`);
+            expect(result).toEqual([`.header("foo", "hard")`, `.header("oof", "drah")`]);
         });
 
         test('Options specify to inject one hardcoded value', () => {
@@ -338,7 +337,7 @@ describe('ScriptUtil', () => {
 
             const result = ScriptUtil.buildHeaders(HEADERS_REQ_MOCK, options);
 
-            TestUtil.expectEqualCleansed(result, `.header("foo", "hard").header("oof", "rab")`);
+            expect(result).toEqual([`.header("foo", "hard")`, `.header("oof", "rab")`]);
         });
 
         test("Options specify to inject one dynamic value, but the var hasn't been saved yet", () => {
@@ -354,7 +353,7 @@ describe('ScriptUtil', () => {
 
             const result = ScriptUtil.buildHeaders(HEADERS_REQ_MOCK, options);
 
-            TestUtil.expectEqualCleansed(result, `.header("foo", "bar").header("oof", "rab")`);
+            expect(result).toEqual([`.header("foo", "bar")`, `.header("oof", "rab")`]);
         });
 
         test("Options specify to inject one dynamic value and one hardcoded value", () => {
@@ -372,7 +371,7 @@ describe('ScriptUtil', () => {
 
             const result = ScriptUtil.buildHeaders(HEADERS_REQ_MOCK, options);
 
-            TestUtil.expectEqualCleansed(result, `.header("foo", "\${__DYN__}").header("oof", "rab")`);
+            expect(result).toEqual([`.header("foo", "\${__DYN__}")`, `.header("oof", "rab")`]);
         });
 
         test("Options specify to inject two dynamic values", () => {
@@ -392,7 +391,7 @@ describe('ScriptUtil', () => {
 
             const result = ScriptUtil.buildHeaders(HEADERS_REQ_MOCK, options);
 
-            TestUtil.expectEqualCleansed(result, `.header("foo", "\${__DYN__}").header("oof", "\${__NYD__}")`);
+            expect(result).toEqual([`.header("foo", "\${__DYN__}")`, `.header("oof", "\${__NYD__}")`]);
         });
 
         test("Options specify a feeder", () => {
@@ -402,7 +401,7 @@ describe('ScriptUtil', () => {
 
             const result = ScriptUtil.buildHeaders(HEADERS_REQ_MOCK, options);
 
-            TestUtil.expectEqualCleansed(result, `.header("foo", "\${foo}").header("oof", "rab")`);
+            expect(result).toEqual([`.header("foo", "\${foo}")`, `.header("oof", "rab")`]);
         });
 
         test("Options specify multiple feeders", () => {
@@ -412,7 +411,7 @@ describe('ScriptUtil', () => {
 
             const result = ScriptUtil.buildHeaders(HEADERS_REQ_MOCK, options);
 
-            TestUtil.expectEqualCleansed(result, `.header("foo", "\${foo}").header("oof", "\${oof}")`);
+            expect(result).toEqual([`.header("foo", "\${foo}")`, `.header("oof", "\${oof}")`]);
         });
 
         test("Options specify a feeder with non-standard case", () => {
@@ -426,7 +425,7 @@ describe('ScriptUtil', () => {
                 }
             } as unknown as express.Request, options);
 
-            TestUtil.expectEqualCleansed(result, `.header("foo-bar", "\${foo-bar}")`);
+            expect(result).toEqual([`.header("foo-bar", "\${foo-bar}")`]);
         });
 
         test("Options specify a mix of variable to inject and feeders", () => {
@@ -450,7 +449,7 @@ describe('ScriptUtil', () => {
                 }
             } as unknown as express.Request, options);
 
-            TestUtil.expectEqualCleansed(result, `.header("foo", "\${__DYN__}").header("foo-bar", "\${foo-bar}")`);
+            expect(result).toEqual([`.header("foo", "\${__DYN__}")`, `.header("foo-bar", "\${foo-bar}")`]);
         });
 
     });

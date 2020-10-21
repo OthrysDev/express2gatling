@@ -4,6 +4,7 @@ import Recorder from 'src/Recorder';
 import Options from 'src/Options';
 import ScriptUtil from 'src/util/ScriptUtil';
 import fs from 'fs';
+import IRecordedRequest from 'src/types/IRecordedRequest';
 
 
 const REQ_MOCK = {
@@ -36,6 +37,17 @@ const RES_MOCK_WITH_BODY = {
 
 const NEXT_MOCK = () => ({}) as express.NextFunction;
 
+const RECORDER_REQUEST: IRecordedRequest = { 
+    name: "get_foo_1", 
+    desc: "GET foo",
+    method: "GET",
+    path: "/foo",
+    headers: [],
+    body: [],
+    varsToSave: [],
+    pause: 777 
+};
+
 
 describe('Recorder', () => {
 
@@ -48,19 +60,17 @@ describe('Recorder', () => {
     describe('rec()', () => {
 
         test('Request without body', () => {
-            const scriptedReq = { name: "n", script: "s", pause: 777 };
-            jest.spyOn(ScriptUtil, 'buildRequest').mockImplementation(() => scriptedReq);
+            jest.spyOn(ScriptUtil, 'buildRequest').mockImplementation(() => RECORDER_REQUEST);
 
             const recorder = new Recorder();
             recorder.rec(REQ_MOCK, RES_MOCK, () => ({}) as express.NextFunction);
 
             expect(recorder.recording.host).toEqual("http://domain.com:8080");
-            expect(recorder.recording.requests).toContain(scriptedReq);
+            expect(recorder.recording.requests).toContain(RECORDER_REQUEST);
         });
 
         test('Request with body', () => {
-            const scriptedReq = { name: "n", script: "s", pause: 777 };
-            const buildRequestMock = jest.fn((req: express.Request, res: express.Response, resBody: any, options: Options, iterator: number) => scriptedReq);
+            const buildRequestMock = jest.fn((req: express.Request, res: express.Response, resBody: any, options: Options, iterator: number) => RECORDER_REQUEST);
             jest.spyOn(ScriptUtil, 'buildRequest').mockImplementation(buildRequestMock);
 
             const recorder = new Recorder();
@@ -70,17 +80,18 @@ describe('Recorder', () => {
             expect(buildRequestMock.mock.calls[0][2]).toEqual({ foo: "bar" });
             
             expect(recorder.recording.host).toEqual("http://domain.com:8080");
-            expect(recorder.recording.requests).toContain(scriptedReq);
+            expect(recorder.recording.requests).toContain(RECORDER_REQUEST);
         });
 
-        test('Request with malformed body - should return', () => {
-            const buildRequestMock = jest.fn((req: express.Request, res: express.Response, resBody: any, options: Options, iterator: number) => ({ name: "0", script: "0", pause: 0 }));
+        test('Request with malformed body - use {} instead', () => {
+            const buildRequestMock = jest.fn((req: express.Request, res: express.Response, resBody: any, options: Options, iterator: number) => (RECORDER_REQUEST));
             jest.spyOn(ScriptUtil, 'buildRequest').mockImplementation(buildRequestMock);
 
             const recorder = new Recorder();
             recorder.rec(REQ_MOCK, { ...RES_MOCK_WITH_BODY, _body: `{"foo":` } as unknown as express.Response, NEXT_MOCK);
 
-            expect(buildRequestMock).toBeCalledTimes(0);
+            expect(buildRequestMock).toBeCalledTimes(1);
+            expect(buildRequestMock.mock.calls[0][2]).toEqual({});
         });
 
         test('Options specify to exclude request with method GET', () => {
@@ -90,8 +101,7 @@ describe('Recorder', () => {
                 },
             } as unknown as Options;
 
-            const scriptedReq = { name: "n", script: "s", pause: 777 };
-            const buildRequestMock = jest.fn((req: express.Request, res: express.Response, resBody: any, options: Options, iterator: number) => scriptedReq);
+            const buildRequestMock = jest.fn((req: express.Request, res: express.Response, resBody: any, options: Options, iterator: number) => RECORDER_REQUEST);
             jest.spyOn(ScriptUtil, 'buildRequest').mockImplementation(buildRequestMock);
 
             const recorder = new Recorder(options);

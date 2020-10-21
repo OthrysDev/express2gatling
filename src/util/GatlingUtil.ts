@@ -1,5 +1,5 @@
 import Options from '../Options';
-import Util from './Util';
+
 
 export default class GatlingUtil {
 
@@ -33,8 +33,9 @@ export default class GatlingUtil {
         return `.check(header("${varName}").saveAs("${GatlingUtil.var(varName)}"))`;
     }
 
-    public static saveBodyVar(varName: string): string {
-        return `.check(jsonPath("$.${varName}").saveAs("${GatlingUtil.var(varName)}"))`;
+    public static saveBodyVar(varPath: string, varName?: string): string {
+        if(!varName) varName = varPath;
+        return `.check(jsonPath("$.${varPath}").saveAs("${GatlingUtil.var(varName)}"))`;
     }
 
     // ================================================================================

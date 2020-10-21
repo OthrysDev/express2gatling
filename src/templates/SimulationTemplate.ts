@@ -1,11 +1,12 @@
 import Options from '../Options';
 import Util from '../util/Util';
+import IRecorderRequest from '../types/IRecordedRequest';
 
 
 const SimulationTemplate = (
     options: Options, 
     host: string | undefined, 
-    requests: { name: string; script: string; pause: number }[]
+    requests: IRecorderRequest[]
 ): string => {
     return `package ${options.packageName}
 
@@ -45,7 +46,10 @@ class ${options.simulationName} extends Simulation {
     val ${options.scenarioName} = scenario("${options.scenarioName}")
         ${options.feeders.map(feeder => `.feed(${Util.removeNonAlphaNumChars(feeder.name)}Feeder)`).join("\n\t\t")}
         .exec(
-            ${requests.map((r) => `${options.requestsFile}.${r.name},${Array(Math.max(0, 75 - `${options.requestsFile}.${r.name}`.length)).join(" ")}pause(${r.pause} milliseconds),`).join("\n\t\t\t")}
+            ${(options.runSequentially) ? 
+                `${options.requestsFile}.${requests[0].name}`
+                :
+                requests.map((r) => `${options.requestsFile}.${r.name},${Array(Math.max(0, 75 - `${options.requestsFile}.${r.name}`.length)).join(" ")}pause(${r.pause} milliseconds),`).join("\n\t\t\t")}
         )
 
     // ==========================================================================================
