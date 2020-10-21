@@ -107,7 +107,7 @@ Here's the full list of options available :
 | variables.inject.headers | { name: string, value: string }[] | [] | Values you want to inject in the headers. Can be a combination of hardcoded values and stored variables, for instance : { name: "foo", value: "foo %bar%" } (given that %bar% is a variable you have previously saved via variables.save. If %bar% has not be captured yet the injection won't work and will default to the initial value) |
 | variables.inject.body | { name: string, value: string }[] | [] | Values you want to inject in the body. Can be a combination of hardcoded values and stored variables, for instance : { name: "foo", value: "foo %bar%" } (given that %bar% is a variable you have previously saved via variables.save. If %bar% has not be captured yet the injection won't work and will default to the initial value) |
 | feeders | { name: string, value: string }[] | [] | Enables you to inject data tied to a (stress test) user session. For example, { name: "email", value: "user.%RANDOM_ALPHANUM%@mail.com" } will generate a randomized email for each of your fake users and will be injected in the 'email' variables in the body |
-| files | string[] | [] | Whenever the recorder catches a multipart formData, it will analyse the extension and swap it for a similarly-typed file in this list. Must contain a list of absolute paths of files (with extensions bound to be used) |
+| assetsFolder | string | "" | The absolute path of the folder containing all the assets your end-user will upload during the recording of the stress test. File upload won't work unless specified |
 
 ## People
 

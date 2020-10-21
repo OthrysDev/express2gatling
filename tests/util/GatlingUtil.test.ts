@@ -83,22 +83,22 @@ describe('GatlingUtil', () => {
 
     describe('formUpload()', () => {
 
-        test('No files specified in options', () => {
+        test('No assetsFolder specified in options', () => {
             const result = GatlingUtil.formUpload("foo", "picture.png", defaultOptions);
 
             TestUtil.expectEqualCleansed(result, `.formUpload("foo", StringBody("""picture.png"""))`);
         });
 
-        test('Options specify matching files', () => {
-            const result = GatlingUtil.formUpload("foo", "picture.png", { ...defaultOptions, files: [ "optionsFile.png" ] });
+        test('Options specify a non-empty assetsFolder', () => {
+            const result = GatlingUtil.formUpload("foo", "picture.png", { ...defaultOptions, assetsFolder: "/path/to/assets" });
 
-            TestUtil.expectEqualCleansed(result, `.formUpload("foo", StringBody("""optionsFile.png"""))`);
+            TestUtil.expectEqualCleansed(result, `.formUpload("foo", StringBody("""/path/to/assets/picture.png"""))`);
         });
 
-        test('Options specify files but with different extensions', () => {
-            const result = GatlingUtil.formUpload("foo", "picture.png", { ...defaultOptions, files: [ "optionsFile.jpg" ] });
+        test(`Options specify a non-empty assetsFolder with a tailing '/'`, () => {
+            const result = GatlingUtil.formUpload("foo", "picture.png", { ...defaultOptions, assetsFolder: "/path/to/assets/" });
 
-            TestUtil.expectEqualCleansed(result, `.formUpload("foo", StringBody("""picture.png"""))`);
+            TestUtil.expectEqualCleansed(result, `.formUpload("foo", StringBody("""/path/to/assets/picture.png"""))`);
         });
 
     });

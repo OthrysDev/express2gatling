@@ -20,10 +20,13 @@ export default class GatlingUtil {
     }
 
     public static formUpload(key: string, fileName: string, options: Options): string {
-        const fileExtension = Util.extension(fileName);
-        const stubFile = Util.shuffle(options.files).find(file => Util.extension(file) === fileExtension);
+        let fileFullPath = fileName;
+        if(options.assetsFolder?.length > 0){
+            if(options.assetsFolder.charAt(options.assetsFolder.length - 1) === "/") fileFullPath = options.assetsFolder + fileName;
+            else fileFullPath = options.assetsFolder + "/" + fileName;
+        }
 
-        return `.formUpload("${key}", StringBody("""${stubFile || fileName}"""))`;
+        return `.formUpload("${key}", StringBody("""${fileFullPath}"""))`;
     }
 
     public static saveHeaderVar(varName: string): string {

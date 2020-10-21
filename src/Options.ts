@@ -40,8 +40,8 @@ type Options = {
     // Feeders
     feeders: { name: string, value: string}[];
 
-    // Files (for multipart/form-data requests)
-    files: string[];
+    // Folder containing all assets (for file uploads)
+    assetsFolder: string;
 };
 
 export const defaultOptions: Options = {
@@ -82,8 +82,8 @@ export const defaultOptions: Options = {
     // Feeders
     feeders: [],
     
-    // Files (for multipart/form-data requests)
-    files: []
+    // Folder containing all assets (for file uploads)
+    assetsFolder: ""
 };
 
 
