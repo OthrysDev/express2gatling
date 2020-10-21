@@ -429,6 +429,30 @@ describe('ScriptUtil', () => {
             TestUtil.expectEqualCleansed(result, `.header("foo-bar", "\${foo-bar}")`);
         });
 
+        test("Options specify a mix of variable to inject and feeders", () => {
+            VarUtil.addVar("dyn");
+
+            const options = {
+                variables: {
+                    inject: {
+                        headers: [
+                            { name: "foo", value: "%dyn%" }
+                        ]
+                    }
+                },
+                feeders: [{ name: "foo-bar", value: "" }]
+            } as unknown as Options;
+
+            const result = ScriptUtil.buildHeaders({
+                headers: {
+                    "foo": "hard",
+                    "foo-bar": "bar"
+                }
+            } as unknown as express.Request, options);
+
+            TestUtil.expectEqualCleansed(result, `.header("foo", "\${__DYN__}").header("foo-bar", "\${foo-bar}")`);
+        });
+
     });
 
     describe('getPause()', () => {
