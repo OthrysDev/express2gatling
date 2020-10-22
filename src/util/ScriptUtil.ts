@@ -15,6 +15,7 @@ export default class ScriptUtil {
     public static buildRequest(req: express.Request, res: express.Response, resBody: any, options: Options, iterator: number): IRecordedRequest {
         const name = Util.getMethodName(req, options, iterator);
 
+        const url = ScriptUtil.buildUrl(req, options);
         const headers = ScriptUtil.buildHeaders(req, options);
         const body = ScriptUtil.buildBody(req, options);
         const varsToSave = VarUtil.saveVars(res.getHeaders(), resBody, options);
@@ -23,7 +24,7 @@ export default class ScriptUtil {
             name, 
             desc: Util.getMethodDesc(req, options, iterator),
             method: req.method,
-            path: req.path,
+            url,
             headers, 
             body, 
             varsToSave,
@@ -31,6 +32,26 @@ export default class ScriptUtil {
             originalResBody: resBody,
             pause: ScriptUtil.getPause()
         };
+    }
+
+    public static buildUrl(req: express.Request, options: Options): string {
+        if(req.query && Object.keys(req.query).length > 0){
+            const queryClone = { ...req.query };
+
+            for(const key of Object.keys(req.query)){
+                if(options.variables?.inject?.queryParams && options.variables.inject.queryParams.length > 0){
+                    const varToInject = options.variables.inject.queryParams.find(h => h.name.toLowerCase() === key.toLowerCase());
+    
+                    if(varToInject){ 
+                        queryClone[key] = VarUtil.injectQueryVar(key, queryClone[key] as string, varToInject.value);
+                    }
+                }
+            }
+
+            return `${req.path}?${Object.keys(queryClone).map(key => `${key}=${queryClone[key]}`).join("&")}`;
+        }
+
+        return req.url;
     }
 
     public static buildBody(req: express.Request, options: Options): string[] {

@@ -24,7 +24,7 @@ export default class VarUtil {
             }
 
             // Fix path
-            for(const p of request.path.split("/")){
+            for(const p of request.url.split("/")){
                 // The server has sent us an ObjectId
                 if(Util.isMongooseObjectId(p) && objectIds[p]){
                     // Save the var value
@@ -32,7 +32,7 @@ export default class VarUtil {
                     if(!objectIds[p].request.varsToSave.includes(saveStr)) objectIds[p].request.varsToSave.push(saveStr);
 
                     // Parametrize the path
-                    request.path = request.path.replace(p, `\${__MONGO_OBJID_${objectIds[p].id}__}`);
+                    request.url = request.url.replace(p, `\${__MONGO_OBJID_${objectIds[p].id}__}`);
                 }
             }
         }

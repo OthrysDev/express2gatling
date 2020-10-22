@@ -5,12 +5,13 @@ import Options from 'src/Options';
 import ScriptUtil from 'src/util/ScriptUtil';
 import fs from 'fs';
 import IRecordedRequest from 'src/types/IRecordedRequest';
+import MongoUtil from 'src/util/MongoUtil';
 
 
 const REQ_MOCK = {
     protocol: "http",
     method: "GET",
-    path: "/foo/bar",
+    url: "/foo/bar",
     headers: {
         host: "domain.com:8080"
     }
@@ -41,7 +42,7 @@ const RECORDER_REQUEST: IRecordedRequest = {
     name: "get_foo_1", 
     desc: "GET foo",
     method: "GET",
-    path: "/foo",
+    url: "/foo",
     headers: [],
     body: [],
     varsToSave: [],
@@ -142,6 +143,32 @@ describe('Recorder', () => {
             expect(createWriteStreamMock).toBeCalledTimes(2);
             expect(createWriteStreamMock.mock.calls[0][0]).toEqual("./gatling/simulations/simulation1/Simulation1.scala");
             expect(createWriteStreamMock.mock.calls[1][0]).toEqual("./gatling/simulations/simulation1/Requests.scala");
+        });
+
+        test('Options specify to add mongo objectId matching', () => {
+            const mkdirSyncMock = jest.fn((path: fs.PathLike, options?: string | number | fs.MakeDirectoryOptions | null | undefined) => undefined);
+            jest.spyOn(fs, 'mkdirSync').mockImplementation(mkdirSyncMock);
+
+            const addMongoObjectIdMatchingMock = jest.fn((requests: IRecordedRequest[]) => undefined);
+            jest.spyOn(MongoUtil, 'addMongoObjectIdMatching').mockImplementation(addMongoObjectIdMatchingMock);
+
+            const createWriteStreamMock = jest.fn((path: fs.PathLike, options?: string | {
+                flags?: string;
+                encoding?: BufferEncoding;
+                fd?: number;
+                mode?: number;
+                autoClose?: boolean;
+                emitClose?: boolean;
+                start?: number;
+                highWaterMark?: number;
+            }) => ({ write: () => ({}) } as unknown as fs.WriteStream));
+            jest.spyOn(fs, 'createWriteStream').mockImplementation(createWriteStreamMock);
+
+            const recorder = new Recorder({ activateObjectIdMatching: true });
+            recorder.write();
+
+            expect(mkdirSyncMock).toBeCalledTimes(1);
+            expect(addMongoObjectIdMatchingMock).toBeCalledTimes(1);
         });
 
     });

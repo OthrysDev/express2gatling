@@ -8,7 +8,7 @@ import fileUpload from 'express-fileupload';
 
 const REQ_MOCK = {
     method: "GET",
-    path: "/foo/bar"
+    url: "/foo/bar"
 } as express.Request;
 
 const JSON_REQ_MOCK = {
@@ -28,6 +28,13 @@ const HEADERS_REQ_MOCK = {
     }
 } as unknown as express.Request;
 
+const URL_PARAMS_REQ_MOCK = {
+    method: "GET",
+    path: "/foo/bar",
+    url: "/foo/bar?baz=zab",
+    query: { baz: "zab" }
+} as unknown as express.Request;
+
 const RES_MOCK = {
     getHeaders: () => ({ foo: "bar" })
 } as unknown as express.Response;
@@ -35,7 +42,10 @@ const RES_MOCK = {
 
 describe('ScriptUtil', () => {
 
-    afterEach(() =>  jest.restoreAllMocks());
+    afterEach(() =>  {
+        jest.restoreAllMocks()
+        VarUtil.reset();
+    });
 
     // ================================================================================================
     // ================================================================================================
@@ -54,7 +64,7 @@ describe('ScriptUtil', () => {
             expect(result.name).toEqual("get_foo_0");
             expect(result.method).toEqual("GET");
             expect(result.desc).toEqual("GET foo");
-            expect(result.path).toEqual("/foo/bar");
+            expect(result.url).toEqual("/foo/bar");
             expect(result.headers).toEqual([".mockedHeaders"]);
             expect(result.body).toEqual([".mockedBody"]);
             expect(result.varsToSave).toEqual([".mockedSaveVars"]);
@@ -72,7 +82,7 @@ describe('ScriptUtil', () => {
             expect(result.name).toEqual("get_foo_0");
             expect(result.method).toEqual("GET");
             expect(result.desc).toEqual("GET foo");
-            expect(result.path).toEqual("/foo/bar");
+            expect(result.url).toEqual("/foo/bar");
             expect(result.headers).toEqual([".mockedHeaders"]);
             expect(result.body).toEqual([]);
             expect(result.varsToSave).toEqual([".mockedSaveVars"]);
@@ -90,7 +100,7 @@ describe('ScriptUtil', () => {
             expect(result.name).toEqual("get_foo_0");
             expect(result.method).toEqual("GET");
             expect(result.desc).toEqual("GET foo");
-            expect(result.path).toEqual("/foo/bar");
+            expect(result.url).toEqual("/foo/bar");
             expect(result.headers).toEqual([]);
             expect(result.body).toEqual([".mockedBody"]);
             expect(result.varsToSave).toEqual([".mockedSaveVars"]);
@@ -108,11 +118,134 @@ describe('ScriptUtil', () => {
             expect(result.name).toEqual("get_foo_0");
             expect(result.method).toEqual("GET");
             expect(result.desc).toEqual("GET foo");
-            expect(result.path).toEqual("/foo/bar");
+            expect(result.url).toEqual("/foo/bar");
             expect(result.headers).toEqual([".mockedHeaders"]);
             expect(result.body).toEqual([".mockedBody"]);
             expect(result.varsToSave).toEqual([]);
             expect(result.pause).toEqual(777);
+        });
+
+    });
+
+    describe('buildUrl()', () => {
+
+        test('No url injection', () => {
+            const jsonResult = ScriptUtil.buildUrl(JSON_REQ_MOCK, defaultOptions);
+
+            expect(jsonResult).toEqual(JSON_REQ_MOCK.url);
+        });
+
+        test(`Injecting a var that hasn't been saved yet`, () => {
+            const options = {
+                variables: {
+                    inject: {
+                        queryParams: [
+                            { name: "baz", value: "%bar%" }
+                        ]
+                    }
+                }
+            } as unknown as Options;
+
+            const result = ScriptUtil.buildUrl(URL_PARAMS_REQ_MOCK, options);
+
+            expect(result).toEqual("/foo/bar?baz=zab");
+        });
+
+        test('Injecting a previously saved var', () => {
+            VarUtil.addVar("bar");
+
+            const options = {
+                variables: {
+                    inject: {
+                        queryParams: [
+                            { name: "baz", value: "%bar%" }
+                        ]
+                    }
+                }
+            } as unknown as Options;
+
+            const result = ScriptUtil.buildUrl(URL_PARAMS_REQ_MOCK, options);
+
+            expect(result).toEqual("/foo/bar?baz=${__BAR__}");
+        });
+
+        test('Injecting a hardcoded value', () => {
+            const options = {
+                variables: {
+                    inject: {
+                        queryParams: [
+                            { name: "baz", value: "hard" }
+                        ]
+                    }
+                }
+            } as unknown as Options;
+
+            const result = ScriptUtil.buildUrl(URL_PARAMS_REQ_MOCK, options);
+
+            expect(result).toEqual("/foo/bar?baz=hard");
+        });
+
+        test('Injecting a mix of dynamic & hardcoded value', () => {
+            VarUtil.addVar("bar");
+
+            const options = {
+                variables: {
+                    inject: {
+                        queryParams: [
+                            { name: "baz", value: "hard%bar%" }
+                        ]
+                    }
+                }
+            } as unknown as Options;
+
+            const result = ScriptUtil.buildUrl(URL_PARAMS_REQ_MOCK, options);
+
+            expect(result).toEqual("/foo/bar?baz=hard${__BAR__}");
+        });
+
+        test(`Injecting a mix of dynamic & hardcoded value but value hasn't been saved yet`, () => {
+            const options = {
+                variables: {
+                    inject: {
+                        queryParams: [
+                            { name: "baz", value: "hard%bar%" }
+                        ]
+                    }
+                }
+            } as unknown as Options;
+
+            const result = ScriptUtil.buildUrl(URL_PARAMS_REQ_MOCK, options);
+
+            expect(result).toEqual("/foo/bar?baz=zab");
+        });
+
+        test(`Injecting multiple hadcorded and dynamic values`, () => {
+            VarUtil.addVar("cachedParam1");
+            VarUtil.addVar("cachedParam3");
+
+            const URL_PARAMS_REQ_MOCK = {
+                method: "GET",
+                path: "/foo/bar",
+                url: "/foo/bar?param1=value1&param2=value2&param3=value3&param4=value4",
+                query: { param1: "value1", param2: "value2", param3: "value3", param4: "value4" }
+            } as unknown as express.Request;
+
+            const options = {
+                variables: {
+                    inject: {
+                        queryParams: [
+                            { name: "param1", value: "hard%cachedParam1%" },
+                            { name: "param2", value: "drad" },
+                            { name: "param3", value: "bla%cachedParam3%bla" },
+                            { name: "param4", value: "%cachedParam4%" },
+                        ]
+                    }
+                }
+            } as unknown as Options;
+
+            const result = ScriptUtil.buildUrl(URL_PARAMS_REQ_MOCK, options);
+
+            expect(result).toEqual("/foo/bar?param1=hard${__CACHEDPARAM1__}&param2=drad&param3=bla${__CACHEDPARAM3__}bla&param4=value4");
         });
 
     });

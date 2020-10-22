@@ -75,6 +75,23 @@ export default class VarUtil {
         return body;
     }
 
+    public static injectQueryVar(key: string, originalValue: string, valueToInject: string): string {
+        let newValue = valueToInject;
+
+        // Variable to inject contains previously saved variable(s)
+        if(newValue.includes("%")) {
+            VarUtil.varsCache.forEach((cachedVar) => {
+                newValue = newValue.replace(new RegExp(cachedVar, 'g'), `\${${GatlingUtil.var(cachedVar)}}`);
+            });
+
+            // Var replacement hasn't fully worked (some vars have not been saved yet, most likely)
+            // Use original value
+            if(newValue.includes("%")) newValue = originalValue;
+        }
+        
+        return newValue;
+    }
+
     public static injectHeaderVar(key: string, originalValue: string, valueToInject: string): string {
         let newValue = valueToInject;
 

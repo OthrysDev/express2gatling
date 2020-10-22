@@ -7,7 +7,7 @@
         "start": "npx tsc && nodemon ./index.ts",
         "lint": "eslint . --ext .ts",
         "test": "jest --roots tests/ --verbose --coverage",
-        "test:file": "jest ./tests/util/MongoUtil.test.ts --verbose"
+        "test:file": "jest ./tests/util/ScriptUtil.test.ts --verbose"
     },
     "author": "Othrys",
     "license": "MIT",

@@ -47,7 +47,7 @@ class ${options.simulationName} extends Simulation {
         ${options.feeders.map(feeder => `.feed(${Util.removeNonAlphaNumChars(feeder.name)}Feeder)`).join("\n\t\t")}
         .exec(
             ${(options.runSequentially) ? 
-                `${options.requestsFile}.${requests[0].name}`
+                `${options.requestsFile}.all_requests_seq`
                 :
                 requests.map((r) => `${options.requestsFile}.${r.name},${Array(Math.max(0, 75 - `${options.requestsFile}.${r.name}`.length)).join(" ")}pause(${r.pause} milliseconds),`).join("\n\t\t\t")}
         )
@@ -58,6 +58,9 @@ class ${options.simulationName} extends Simulation {
 
     // Run scenario
     setUp(${options.scenarioName}.inject(atOnceUsers(1)).protocols(httpProtocol))
+
+    // An example of a ramped up scenario - feel free to modify
+    //setUp(${options.scenarioName}.inject(rampUsers(500) during (300 seconds))).protocols(httpProtocol)
 }
 
 `

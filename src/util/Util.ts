@@ -17,8 +17,8 @@ export default class Util {
         return patternedString
             .replace(/%method%/g, req.method.toLowerCase())
             .replace(/%METHOD%/g, req.method)
-            .replace(/%pathStart%/g, req.path.split("/")[1])
-            .replace(/%PATHSTART%/g, req.path.split("/")[1].toUpperCase())
+            .replace(/%urlStart%/g, req.url.split("/")[1])
+            .replace(/%URLSTART%/g, req.url.split("/")[1].toUpperCase())
             .replace(/%iterator%/g, new Number(iterator).toString());
     }
 

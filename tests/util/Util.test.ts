@@ -5,7 +5,7 @@ import Options from 'src/Options';
 
 const REQ_MOCK = {
     method: "GET",
-    path: "/foo/bar"
+    url: "/foo/bar"
 } as express.Request;
 
 
@@ -25,14 +25,14 @@ describe('Util', () => {
             expect(result).toEqual("GET_GET");
         });
 
-        test('Testing %pathStart% insertion', () => {
-            const result = Util.buildString(REQ_MOCK, "%pathStart%_%pathStart%", 0);
+        test('Testing %urlStart% insertion', () => {
+            const result = Util.buildString(REQ_MOCK, "%urlStart%_%urlStart%", 0);
 
             expect(result).toEqual("foo_foo");
         });
 
-        test('Testing %PATHSTART% insertion', () => {
-            const result = Util.buildString(REQ_MOCK, "%PATHSTART%_%PATHSTART%", 0);
+        test('Testing %URLSTART% insertion', () => {
+            const result = Util.buildString(REQ_MOCK, "%URLSTART%_%URLSTART%", 0);
 
             expect(result).toEqual("FOO_FOO");
         });
@@ -43,8 +43,8 @@ describe('Util', () => {
             expect(result).toEqual("65_65");
         });
 
-        test('Testing a combination of %method%, %METHOD%, %pathStart%, %PATHSTART% & %iterator%', () => {
-            const patternedString = "%method%_%METHOD% %pathStart%-%PATHSTART%-%iterator% > %METHOD%/%method%:%PATHSTART%:%iterator%:%pathStart%";
+        test('Testing a combination of %method%, %METHOD%, %urlStart%, %URLSTART% & %iterator%', () => {
+            const patternedString = "%method%_%METHOD% %urlStart%-%URLSTART%-%iterator% > %METHOD%/%method%:%URLSTART%:%iterator%:%urlStart%";
             const result = Util.buildString(REQ_MOCK, patternedString, 77);
 
             expect(result).toEqual("get_GET foo-FOO-77 > GET/get:FOO:77:foo");
@@ -55,7 +55,7 @@ describe('Util', () => {
     describe('getMethodName()', () => {
 
         test('Testing standard pattern', () => {
-            const result = Util.getMethodName(REQ_MOCK, { methodsNamePattern: "%method%_%pathStart%_%iterator%" } as Options, 110);
+            const result = Util.getMethodName(REQ_MOCK, { methodsNamePattern: "%method%_%urlStart%_%iterator%" } as Options, 110);
 
             expect(result).toEqual("get_foo_110");
         });
@@ -65,7 +65,7 @@ describe('Util', () => {
     describe('getMethodDesc()', () => {
 
         test('Testing standard pattern', () => {
-            const result = Util.getMethodDesc(REQ_MOCK, { methodsDescPattern: "%METHOD% %pathStart%" } as Options, 110);
+            const result = Util.getMethodDesc(REQ_MOCK, { methodsDescPattern: "%METHOD% %urlStart%" } as Options, 110);
 
             expect(result).toEqual("GET foo");
         });

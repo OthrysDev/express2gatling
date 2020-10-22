@@ -202,6 +202,30 @@ describe('VarUtil', () => {
 
     });
 
+    describe('injectQueryVar()', () => {
+
+        test('Inject hardcoded value', () => {
+            const result = VarUtil.injectQueryVar("foo", "bar", "baz");
+
+            expect(result).toContain(`baz`);
+        });
+
+        test('Inject dynamic value not available in cache', () => {
+            const result = VarUtil.injectQueryVar("foo", "bar", "%baz%");
+
+            expect(result).toContain(`bar`);
+        });
+
+        test('Inject dynamic value available in cache', () => {
+            VarUtil.addVar("baz");
+
+            const result = VarUtil.injectQueryVar("foo", "bar", "%baz%");
+
+            expect(result).toContain(`\${__BAZ__}`);
+        });
+
+    });
+
     describe('injectHeaderVar()', () => {
 
         test('Inject hardcoded value', () => {
@@ -252,34 +276,5 @@ describe('VarUtil', () => {
         });
 
     });
-
-
-    // describe('matchObjectIds()', () => {
-
-    //     test('Options specify not to do any matching', () => {
-    //         const body = { foo: "5f71a00f9e93912e30ada343" };
-
-    //         const result = VarUtil.matchObjectIds(body, { activateObjectIdMatching: false } as Options);
-
-    //         expect(result).toEqual(undefined);
-    //     });
-
-    //     test('One objectId is in the body', () => {
-    //         const body = { foo: "5f71a00f9e93912e30ada343" };
-
-    //         const result = VarUtil.matchObjectIds(body, { activateObjectIdMatching: true } as Options);
-
-    //         expect(result).toEqual({ "5f71a00f9e93912e30ada343": "foo" });
-    //     });
-
-    //     test('Mix of objectIds and non-objectIds in the body', () => {
-    //         const body = { foo: "5f71a00f9e93912e30ada343", bar: "rab", baz: { foo: "5f71a9109214f31bf8e949da", bar: "rab", oof: [ "one", "5f72dd25aa57b32730ff62b9" ] } };
-
-    //         const result = VarUtil.matchObjectIds(body, { activateObjectIdMatching: true } as Options);
-
-    //         expect(result).toEqual({ "5f71a00f9e93912e30ada343": "foo", "5f71a9109214f31bf8e949da": "baz.foo", "5f72dd25aa57b32730ff62b9": "baz.oof.1" });
-    //     });
-
-    // });
 
 });

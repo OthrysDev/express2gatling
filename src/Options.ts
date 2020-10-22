@@ -38,6 +38,7 @@ type Options = {
             body?: string[]
         },
         inject: {
+            queryParams?: { name: string, value: string }[],
             headers?: { name: string, value: string }[],
             body?: { name: string, value: string }[],
         }
@@ -68,8 +69,8 @@ export const defaultOptions: Options = {
     requestsFile: "Requests",
 
     // Dynamic namings
-    methodsNamePattern: "%method%_%pathStart%_%iterator%",
-    methodsDescPattern: "%METHOD% %pathStart%",
+    methodsNamePattern: "%method%_%urlStart%_%iterator%",
+    methodsDescPattern: "%METHOD% %urlStart%",
 
     // Filter out unwanted requests
     excludeRequests: {
@@ -86,6 +87,7 @@ export const defaultOptions: Options = {
             body: []
         },
         inject: {
+            queryParams: [],
             headers: [],
             body: []
         }

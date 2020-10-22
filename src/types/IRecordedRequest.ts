@@ -4,7 +4,7 @@ interface IRecordedRequest {
     name: string; 
     desc: string;
     method: string;
-    path: string;
+    url: string;
     headers: string[]; 
     body: string[]; 
     varsToSave: string[]; 
